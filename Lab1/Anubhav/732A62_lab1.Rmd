@@ -1,0 +1,123 @@
+---
+title: "Time Series (732A62) Lab1"
+author: "Anubhav Dikshit(anudi287) and Maximilian Pfundstein(maxpf364)"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    pdf_document:
+      toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+
+library("ggplot2")
+library("tidyverse")
+library("gridExtra") # combine plots
+library("knitr")
+
+
+# The palette with black:
+cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+set.seed(12345)
+```
+
+\newpage
+
+# Assignment 1. Computations with simulated data
+
+
+\fbox{\begin{minipage}{46.7em}
+a) Generate two time series $x_t = -0.8x_{t-2} + w_t,$ where $x_0 = x_1 = 0$ and $x_t= cos(\frac{2 \pi t}{5}) $ with 100 observations each. Apply a smoothing filter $v_t = 0.2(x_t + x_{t-1} + x_{t-2} + x_{t-3} + x_{t-4})$ to these two series and compare how the filter has affected them.
+\end{minipage}}
+
+```{r}
+set.seed(12345)
+
+n = 100
+x <- vector(length = n)
+x2 <- vector(length = n)
+
+x[1] <- 0
+x[2] <- 0
+
+#first series generation
+for(i in 3:n){
+  x[i] <- -0.8 * x[i-2] + rnorm(1,0,1)
+}
+
+#second series generation
+for(i in 1:n){
+  x2[i] <- cos(0.4*pi*i)
+}
+
+# smoothing filter function
+smoothing_filter <- function(x){
+v <- vector(length = length(x))
+for(i in 5:length(x)){
+  v[i] = 0.2 * (x[i] + x[i-1] + x[i-2] + x[i-3] + x[i-4])
+}
+return(v)
+}
+
+#generate smoothed series
+smooth_x <- smoothing_filter(x)
+smooth_x2 <- smoothing_filter(x2)
+
+#adding everything to a dataframe
+df <- cbind(x,x2,smooth_x,smooth_x2) %>% as.data.frame() %>% mutate(index=1:100)
+
+ggplot(df, aes(x=index)) + 
+  geom_line(aes(y=x, color="Original Time Series")) + 
+  geom_line(aes(y=smooth_x, color="Smoothened Time Series")) + 
+  ggtitle("Plot of 1st time series and its smoothened version") +
+    scale_colour_manual("", breaks = c("Original Time Series", "Smoothened Time Series"),
+                        values = c("#CC79A7", "#000000"))
+
+ggplot(df, aes(x=index)) + 
+  geom_line(aes(y=x2, color="Original Time Series")) + 
+  geom_line(aes(y=smooth_x2, color="Smoothened Time Series")) + 
+  ggtitle("Plot of 2nd time series and its smoothened version") +
+    scale_colour_manual("", breaks = c("Original Time Series", "Smoothened Time Series"),
+                        values = c("#CC79A7", "#000000"))
+
+```
+
+\fbox{\begin{minipage}{46.7em}
+b) Consider time series $x_t - 4 x_{t-1} + 2 x_{t-2} + x_{t-5} = w_t + 3 w_{t-2} + w_{t-4} - 4w_{t-6}$. Write an appropriate R code to investigate whether this time series is casual and invertible.
+\end{minipage}}
+
+
+A linear process $X_t$ is causal(strictly, a causal function of $w_t$) if there is a 
+$$\psi(B) = \psi_0 + \psi_1 B + \psi_2 B^2 +....  $$
+with $$ \sum^\infty_{j=0} |\psi_j| < \infty $$
+and
+$$ X_t = \psi(B) w_t$$
+```{r}
+set.seed(12345)
+w <- rnorm(100,0,1)
+x <- rep(0,100)
+
+for(i in 7:100){
+x[i] = w[i] + 3 * w[i-2] + w[i-4] - 4 * w[i-6] + 4 * x[i-1] - 2 * x[i-2] - x[i-5]   
+}
+plot(x)
+
+```
+
+\fbox{\begin{minipage}{46.7em}
+c) Use built-in R functions to simulate 100 observations from the process $ x_t + \frac{3}{4} x_{t-1} = w_t - \frac{1}{9} w_{t-2},$ compute sample ACF and theoretical ACF, use seed 54321. Compare the ACF plots.
+\end{minipage}}
+
+```{r}
+set.seed(54321)
+
+```
+
+# Appendix
+
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+```
+
+
