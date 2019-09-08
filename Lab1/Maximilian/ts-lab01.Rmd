@@ -182,6 +182,25 @@ isInvertible(Z_theta)
 
 **Task:** Use built-in R functions to simulate 100 observations from the process $x_t + \frac{3}{4}x_{t-1} = w_t - \frac{1}{9}w_{t-2}$, compute sample ACF and theoretical ACF, use seed 54321. Compare the ACF plots.
 
+```{r}
+
+set.seed(54321)
+
+model = list(ar = c(-3/4), ma = c(0, -1/9))
+series = arima.sim(model = model, n = 100)
+
+# Sample
+auto_correlations_sample = acf(series)
+
+# Theoretical
+auto_correlations_theoretical = ARMAacf(ar = model$ar, ma = model$ma,
+                                        lag.max = 20)
+acf(auto_correlations_theoretical)
+
+```
+
+We can see that the theoretical AC is between the blue lines after three iterations, while the sample AC exceeds the lines for a longer period of time.
+
 # Visualization, detrending and residual analysis of Rhine data
 
 The data set `Rhine.csv` contains monthly concentrations of total nitrogen in the Rhine River in the period
