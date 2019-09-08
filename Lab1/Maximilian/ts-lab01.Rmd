@@ -1,6 +1,6 @@
 ---
 title: "Bayesian Learning - Lab 03"
-author: "Anub Dikshit (anudi287) and Maximilian Pfundstein (maxpf364)"
+author: "Anubhav Dikshit (anudi287) and Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
