@@ -368,8 +368,8 @@ where $I(x) = 1$ if x is true and 0 otherwise. Fitting of this model will requir
 
 rhine_onehot = rhine
 
-# Could be easier handled using as.factor(rhine$Month) as the formula,
-# but then the columns don't have names and the "new" dataframe is not saves,
+# Could be easier handled using as.factor(rhine$Month) in the formula,
+# but then the columns don't have names and the "new" dataframe is not saved,
 # so we will stick with this.
 
 rhine_onehot = rhine_onehot %>%
