@@ -325,22 +325,20 @@ df <- data.frame(oil_price_one_diff=as.matrix(oil_price_one_diff),
 
 df <- na.omit(df)
 
-
 df$gas_price_one_diff = lag(df$gas_price_one_diff,1)
 df$gas_price_two_diff = lag(df$gas_price_one_diff,2)
 df$gas_price_three_diff = lag(df$gas_price_one_diff,3)
-df$oil_price_one_diff = lag(df$oil_price_one_diff,1)
-df$oil_price_two_diff = lag(df$oil_price_one_diff,2)
-df$oil_price_three_diff = lag(df$oil_price_one_diff,3)
+
 
 df <- na.omit(df)
 
-df$smooth_one_week_lag <- ksmooth(x = df$oil_price_one_diff, y = df$gas_price_one_diff, bandwidth = 0.4, kernel = "normal")$y
-df$smooth_two_week_lag <- ksmooth(x = df$oil_price_two_diff, y = df$gas_price_two_diff, bandwidth = 0.4, kernel = "normal")$y
-df$smooth_three_week_lag <- ksmooth(x = df$oil_price_three_diff, y = df$gas_price_three_diff, bandwidth = 0.4, kernel = "normal")$y
+df$smooth_one_week_lag <- ksmooth(x = df$oil_price_one_diff, y = df$gas_price_one_diff, bandwidth = 0.05, kernel = "normal")$y
+df$smooth_two_week_lag <- ksmooth(x = df$oil_price_one_diff, y = df$gas_price_two_diff, bandwidth = 0.05, kernel = "normal")$y
+df$smooth_three_week_lag <- ksmooth(x = df$oil_price_one_diff, y = df$gas_price_three_diff, bandwidth = 0.05, kernel = "normal")$y
 
+df <- na.omit(df)
 
-ggplot(data=df, aes(x=time)) + 
+ggplot(data=df, aes(x=oil_price_one_diff, y = gas_price_one_diff)) + geom_point() +
   geom_line(aes(y= smooth_one_week_lag, color= "smooth_one_week_lag")) +
     geom_line(aes(y= smooth_two_week_lag, color= "smooth_two_week_lag")) +
     geom_line(aes(y= smooth_three_week_lag, color= "smooth_three_week_lag")) +
@@ -357,6 +355,7 @@ e) Fit the following model: $y_t = \alpha_0 + \alpha_1 I(x_t > 0) + \beta_1 x_t 
 ```{r}
 set.seed(12345)
 
+df$oil_price_two_diff = lag(df$oil_price_one_diff,2)
 df$x_t_more_zero <- ifelse(df$oil_price_one_diff>0,"1","0")
 lm_model_lag <- lm(data=df, formula = gas_price_one_diff~x_t_more_zero+oil_price_one_diff+oil_price_two_diff)
 
