@@ -1,5 +1,5 @@
 ---
-title: "Bayesian Learning - Lab 03"
+title: "Time Series Analysis - Lab 01"
 author: "Anubhav Dikshit (anudi287) and Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
 output:
@@ -17,6 +17,8 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
+library(readr)
+library(dplyr)
 set.seed(12345)
 ```
 
@@ -203,20 +205,197 @@ We can see that the theoretical AC is between the blue lines after three iterati
 
 # Visualization, detrending and residual analysis of Rhine data
 
-The data set `Rhine.csv` contains monthly concentrations of total nitrogen in the Rhine River in the period
-1989-2002.
+The data set `Rhine.csv` contains monthly concentrations of total nitrogen in the Rhine River in the period 1989-2002.
 
 **Task a):** Import the data to R, convert it appropriately to *ts* object (use function `ts()`) and explore it by plotting the time series, creating scatter plots of $x_t$ against $x_{t-1},...,x_{t-12}$. Analyze the time series plot and the scatter plots: Are there any trends, linear or seasonal, in the time series? When during the year is the concentration highest? Are there any special patterns in the data or scatterplots? Does the variance seem to change over time? Which variables in the scatterplots seem to have a significant relation to each other?
 
+**Answer:** First, we import the data to R and take a look at it.
+
+```{r}
+
+rhine = read_csv2("Rhine.csv")
+head(rhine)
+
+```
+
+Now we make a time series object from the data and convert it to a time series.
+
+```{r}
+
+rhine_time_series = ts(data = rhine$TotN_conc, start = c(1989,1),
+                       frequency = 12)
+
+# Normal Time Series
+plot(rhine_time_series)
+
+# 12 Lags as we have 12 month each year
+lag.plot(rhine_time_series, lags = 12)
+
+# Autocovariance
+acf(rhine_time_series, lag.max = nrow(rhine))
+
+```
+
+**Q:** Are there any trends, linear or seasonal, in the time series?
+
+**A:** When looking directly at the time series, its clearly visible that we have a (linear) downwards-trend over the years. Also we identify the seasonal trend of the data.
+
+**Q:** When during the year is the concentration highest?
+
+**A:** The concentrations of total nitrogen is higher during winter and lower during summer.
+
+**Q:** Are there any special patterns in the data or scatterplots?
+
+**A:** Looking at the scatterplot we can see that at lag 1 we start with a high correlations which gets lower as the lag increases up to 6. After that the behaviour is reversed, the correlation now getting higher again towards a lag of 12. So here we can as well see the seasonal behaviour.
+
+**Q:** Does the variance seem to change over time?
+
+**A:** Yes, it seems to become lower over time. The difference between the minimum and maximum amount of concentrations seems to become lower as the years pass by.
+
+**Q:** Which variables in the scatterplots seem to have a significant relation to each other?
+
+**A:** As already mentioned in the first question, around lag 1 and lag 12 the relation seems to be high, which makes sense as we have seen a seasonal trend. Lag 1 is kind of normal, even for a non-seasonal time series, but lag 12 suggests a seasonal behaviour.
+
 **Task b):** Eliminate the trend by fitting a linear model with respect to t to the time series. Is there a significant time trend? Look at the residual pattern and the sample ACF of the residuals and comment how this pattern might be related to seasonality of the series.
+
+```{r}
+
+# Linear Model
+rhine_linear_model = lm(TotN_conc ~ Time, data=rhine)
+
+# Difference
+detrended = rhine_time_series - rhine_linear_model$fitted.values
+plot(detrended)
+
+plot(rhine_linear_model)
+acf(rhine_linear_model$residuals)
+
+# Could also be decomposed by using this
+#rhine_decomposed_additive = decompose(rhine_time_series, "additive")
+#rhine_decomposed_multiplicative = decompose(rhine_time_series, "multiplicative")
+
+# STL() would also be possible
+
+```
+
+**Answer:** The first picture shows the detrended data, containing only the seasonality and the error. Clearly, the seasonality is visible. When looking at the ACF of the residuals we can also observe the seasonality and we also see that it's getting lower over time. **TODO**.
 
 **Task c):** Eliminate the trend by fitting a kernel smoother with respect to t to the time series (choose a reasonable bandwidth yourself so the fit looks reasonable). Analyze the residual pattern and the sample ACF of the residuals and compare it to the ACF from step b). Conclusions? Do residuals seem to represent a stationary series?
 
+```{r}
+
+rhine_time_series_smoothed_5 = ksmooth(x = rhine$Time,
+                                     y = rhine$TotN_conc,
+                                     bandwidth=5)
+
+rhine_time_series_smoothed_10 = ksmooth(x = rhine$Time,
+                                     y = rhine$TotN_conc,
+                                     bandwidth=10)
+
+rhine_time_series_smoothed_20 = ksmooth(x = rhine$Time,
+                                     y = rhine$TotN_conc,
+                                     bandwidth=20)
+
+residual_k_5 = rhine_time_series - rhine_time_series_smoothed_5$y
+residual_k_10 = rhine_time_series - rhine_time_series_smoothed_10$y
+residual_k_20 = rhine_time_series - rhine_time_series_smoothed_20$y
+
+```
+
+```{r, echo = FALSE}
+
+df = data.frame(x = rhine_time_series_smoothed_5$x,
+                s5 = rhine_time_series_smoothed_5$y,
+                s10 = rhine_time_series_smoothed_10$y,
+                s20 = rhine_time_series_smoothed_20$y,
+                rhine$TotN_conc)
+
+ggplot(df) +
+  geom_line(aes(x = x, y = s5, colour = "Bandwith = 5")) +
+  geom_line(aes(x = x, y = s10, colour = "Bandwith = 10")) +
+  geom_line(aes(x = x, y = s20, colour = "Bandwith = 20")) +
+  geom_line(aes(x = x, y = rhine.TotN_conc, colour = "Original Data")) +
+  labs(title = "Different Smoothing Filters",
+       y = "Monthly concentrations of total nitrogen",
+       x = "Time", color = "Legend") +
+  scale_color_manual(values = c("#C70039", "#FF5733", "#581845", "#000000")) +
+  theme_minimal()
+
+```
+
+```{r, echo=FALSE, warning=FALSE}
+
+df = data.frame(x = rhine$Time,
+                k5 = residual_k_5,
+                k10 = residual_k_10,
+                k20 = residual_k_20,
+                rhine$TotN_conc)
+
+ggplot(df) +
+  geom_line(aes(x = x, y = k5, colour = "Residual with Bandwith = 5")) +
+  geom_line(aes(x = x, y = k10, colour = "Residual with Bandwith = 10")) +
+  geom_line(aes(x = x, y = k20, colour = "Residual with Bandwith = 20")) +
+  geom_line(aes(x = x, y = rhine.TotN_conc, colour = "Original Data")) +
+  labs(title = "Different Smoothing Filters",
+       y = "Monthly concentrations of total nitrogen",
+       x = "Time", color = "Legend") +
+  scale_color_manual(values = c("#C70039", "#FF5733", "#581845", "#000000")) +
+  theme_minimal()
+
+```
+
+```{r}
+
+acf(residual_k_5)
+acf(residual_k_10)
+acf(residual_k_20)
+
+```
+
+**Answer:** Looking of the ACF plots of the residuals we observe that their absolute value changes, but it does not seem like the series becomes stationary. Also looking at the residual pattern we see, that it actually gets smoothed to some extend, but the general trend seems to be unaffacted, also the seasonality does not disappear.
+
 **Task d):** Eliminate the trend by fitting the following so-called seasonal means model:
 
-$$x_t = \alpha_0 + \alpha_1t + \beta_1I(\text{month} = 2) + ... + \beta_{12}I(\text{month} = 12) + w_t$$
+$$x_t = \alpha_0 + \alpha_1t + \beta_1I(\text{month} = 1) + ... + \beta_{12}I(\text{month} = 12) + w_t$$
 
 where $I(x) = 1$ if x is true and 0 otherwise. Fitting of this model will require you to augment data with a categorical variable showing the current month, and then fitting a usual linear regression. Analyze the residual pattern and the ACF of residuals.
+
+```{r}
+
+rhine_onehot = rhine
+
+# Could be easier handled using as.factor(rhine$Month) as the formula,
+# but then the columns don't have names and the "new" dataframe is not saves,
+# so we will stick with this.
+
+rhine_onehot = rhine_onehot %>%
+  mutate(January = if_else(Month == 1, TRUE, FALSE)) %>%
+  mutate(February = if_else(Month == 2, TRUE, FALSE)) %>%
+  mutate(March = if_else(Month == 3, TRUE, FALSE)) %>%
+  mutate(April = if_else(Month == 4, TRUE, FALSE)) %>%
+  mutate(May = if_else(Month == 5, TRUE, FALSE)) %>%
+  mutate(June = if_else(Month == 6, TRUE, FALSE)) %>%
+  mutate(July = if_else(Month == 7, TRUE, FALSE)) %>%
+  mutate(August = if_else(Month == 8, TRUE, FALSE)) %>%
+  mutate(September = if_else(Month == 9, TRUE, FALSE)) %>%
+  mutate(October = if_else(Month == 10, TRUE, FALSE)) %>%
+  mutate(November = if_else(Month == 11, TRUE, FALSE)) %>%
+  mutate(December = if_else(Month == 11, TRUE, FALSE))
+
+seasonal_model = lm(formula = TotN_conc ~ Time + January + February + March + April +
+                                May + June + July + August +
+                                September + October + November + December,
+                    data = rhine_onehot)
+
+detrended2 = rhine_time_series - seasonal_model$fitted.values
+plot(detrended2)
+
+plot(seasonal_model)
+acf(seasonal_model$residuals)
+
+```
+
+**Answer:** We can clearly see that the trend is gone. Also it looks like that after detrending with this model, the remaining data/model seems to become stationary. **TODO**
 
 # Analysis of oil and gas time series
 
