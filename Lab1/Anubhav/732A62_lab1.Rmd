@@ -358,7 +358,7 @@ e) Fit the following model: $y_t = \alpha_0 + \alpha_1 I(x_t > 0) + \beta_1 x_t 
 set.seed(12345)
 
 df$x_t_more_zero <- ifelse(df$oil_price_one_diff>0,"1","0")
-lm_model_lag <- lm(data=df, formula = gas_price_one_diff~oil_price_one_diff+oil_price_two_diff)
+lm_model_lag <- lm(data=df, formula = gas_price_one_diff~x_t_more_zero+oil_price_one_diff+oil_price_two_diff)
 
 plot(lm_model_lag$residuals, type = 'l')
 ggAcf(lm_model_lag$residuals)
