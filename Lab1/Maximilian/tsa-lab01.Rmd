@@ -19,6 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(readr)
 library(dplyr)
+library(astsa)
 set.seed(12345)
 ```
 
@@ -263,11 +264,14 @@ acf(rhine_time_series, lag.max = nrow(rhine))
 # Linear Model
 rhine_linear_model = lm(TotN_conc ~ Time, data=rhine)
 
+summary(rhine_linear_model)
+
 # Difference
 detrended = rhine_time_series - rhine_linear_model$fitted.values
 plot(detrended)
 
 plot(rhine_linear_model)
+plot(rhine_linear_model$residuals)
 acf(rhine_linear_model$residuals)
 
 # Could also be decomposed by using this
@@ -388,10 +392,12 @@ seasonal_model = lm(formula = TotN_conc ~ Time + January + February + March + Ap
                     data = rhine_onehot)
 
 detrended2 = rhine_time_series - seasonal_model$fitted.values
-plot(detrended2)
 
+plot(detrended2)
 plot(seasonal_model)
+
 acf(seasonal_model$residuals)
+plot(seasonal_model$residuals)
 
 ```
 
@@ -399,18 +405,169 @@ acf(seasonal_model$residuals)
 
 # Analysis of oil and gas time series
 
-Weekly time series *oil* and *gas* present in the package astsa show the oil prices in dollars per barrel and gas
-prices in cents per dollar.
+Weekly time series *oil* and *gas* present in the package `astsa` show the oil prices in dollars per barrel and gas prices in cents per dollar.
+
+```{r}
+
+oil_data = astsa::oil
+gas_data = astsa::gas
+
+oil_data_ts = ts(oil_data)
+gas_data_ts = ts(gas_data)
+
+```
 
 **Task a):** Plot the given time series in the same graph. Do they look like stationary series? Do the processes seem to be related to each other? Motivate your answer.
 
+```{r, echo=FALSE}
+
+df = data.frame(index = 1:length(oil_data),
+                date = seq(from = start(oil)[1] + start(oil)[2]/52,
+                           to = end(oil)[1] + end(oil)[2]/52,
+                           by=1/52),
+                oil = oil_data,
+                gas = gas_data)
+
+ggplot(df) +
+  geom_line(aes(x = date, y = oil, colour = "Oil")) +
+  geom_line(aes(x = date, y = gas, colour = "Gas")) +
+  labs(title = "Oil and Gas prices over time", y = "y",
+  x = "Iteration", color = "Legend") +
+  scale_color_manual(values = c("#C70039", "#581845")) +
+  theme_minimal()
+
+```
+
+**Answer:** Both series do not seem stationary as they have an increase in variance and a positive linear trend. Also both series seem to be related, as both have a price drop around year 2008/2009.
+
 **Task b):** Apply log-transform to the time series and plot the transformed data. In what respect did this transformation made the data easier for the analysis?
+
+```{r}
+
+df$oil_log = log(df$oil)
+df$gas_log = log(df$gas)
+
+```
+
+```{r, echo=FALSE}
+
+ggplot(df) +
+  geom_line(aes(x = date, y = oil_log, colour = "Oil")) +
+  geom_line(aes(x = date, y = gas_log, colour = "Gas")) +
+  labs(title = "Log Oil and Gas prices over time", y = "y",
+  x = "Iteration", color = "Legend") +
+  scale_color_manual(values = c("#C70039", "#581845")) +
+  theme_minimal()
+
+```
+
+**Answer:** The log operation reduces the *amplitude* of the variance, thus making it easier to analize the two time series.
 
 **Task c):** To eliminate trend, compute the first difference of the transformed data, plot the detrended series, check their ACFs and analyze the obtained plots. Denote the data obtained here as $x_t$ (oil) and $y_t$ (gas).
 
+```{r}
+
+oil_log_diff = diff(df$oil_log, differences = 1)
+gas_log_diff = diff(df$gas_log, differences = 1)
+
+df$x_t = c(NA, oil_log_diff) #oil
+df$y_t = c(NA, gas_log_diff) #gas
+
+acf(oil_log_diff)
+acf(gas_log_diff)
+
+```
+
+```{r, echo=FALSE, warning=FALSE}
+
+ggplot(df) +
+  geom_line(aes(x = date, y = x_t, colour = "Oil")) +
+  labs(title = "First (log) Difference of Oil and Gas prices over time", y = "y",
+  x = "Iteration", color = "Legend") +
+  scale_color_manual(values = c("#C70039", "#581845")) +
+  theme_minimal()
+
+ggplot(df) +
+  geom_line(aes(x = date, y = y_t, colour = "Gas")) +
+  labs(title = "First (log) Difference of Oil and Gas prices over time", y = "y",
+  x = "Iteration", color = "Legend") +
+  scale_color_manual(values = c("#581845", "#C70039")) +
+  theme_minimal()
+
+```
+
+**Answer:** Now it seems like both series are stationary and also their variance semms (still) to be normalized.
+
 **Task d):** Exhibit scatterplots of $x_t$ and $y_t$ for up to three weeks of lead time of $x_t$; include a nonparametric smoother in each plot and comment the results: are there outliers? Are the relationships linear? Are there changes in the trend?
 
+```{r}
+
+#oil_log_diff
+#gas_log_diff
+
+df = na.omit(df)
+
+# Creating lags
+df$oil_log_lag_1 = stats::lag(oil_log_diff, 1)
+df$oil_log_lag_2 = stats::lag(oil_log_diff, 2)
+df$oil_log_lag_3 = stats::lag(oil_log_diff, 3)
+df$gas_log_lag_1 = stats::lag(gas_log_diff, 1)
+df$gas_log_lag_2 = stats::lag(gas_log_diff, 2)
+df$gas_log_lag_3 = stats::lag(gas_log_diff, 3)
+
+# Smoothing
+df$smooth_one_week = ksmooth(x = df$oil_log_lag_1,
+                             y = df$gas_log_lag_1,
+                             bandwidth = 1/52)$y
+
+df$smooth_two_week = ksmooth(x = df$oil_log_lag_2,
+                             y = df$gas_log_lag_2,
+                             bandwidth = 1/52)$y
+
+df$smooth_three_week = ksmooth(x = df$oil_log_lag_3,
+                               y = df$gas_log_lag_3,
+                               bandwidth = 1/52)$y
+
+```
+
+```{r, echo=FALSE}
+
+ggplot(df) +
+  geom_line(aes(x = date, y = smooth_one_week, colour = "One Week")) +
+  geom_line(aes(x = date, y = smooth_two_week, colour = "Two Weeks")) +
+  geom_line(aes(x = date, y = smooth_three_week, colour = "Three Weeks")) +
+  labs(title = "Smoothed Lag Differences Between Oil and Gas by Weeks",
+       y = "Smoothed Lag Difference Between x_t and y_t",
+       x = "Time", color = "Legend") +
+  scale_color_manual(values = c("#C70039", "#581845", "#FFC300")) +
+  theme_minimal()
+
+```
+
+
+**Answer:** **TODO** Fix this shit :D
+
 **Task e):** Fit the following model: $y_t = \alpha_0 + \alpha_1I(x_t > 0) + \beta_1 x_t + \beta_2x_{t-1} + w_t$ and check which coefficients seem to be significant. How can this be interpreted? Analyze the residual pattern and the ACF of the residuals.
+
+```{r}
+
+# Greating the Identity
+df$x_t_greater_zero = ifelse(df$x_t>0, TRUE, FALSE)
+
+# Creating x_{t-1}
+df$x_t_1 = c(NA, df$x_t[1:(length(df$x_t))-1])
+
+model_e = lm(formula = df$y_t ~ df$x_t_greater_zero + df$x_t_1 + df$x_t)
+
+summary(model_e)
+plot(model_e)
+
+acf(model_e$residuals)
+plot(model_e$residuals)
+
+```
+
+**Answer:** It seems like the feature $x_t$ is significant. The residuals look like white noise (with a specific $\sigma$), which means that we explained everything in the data that is predictable. Looking at the ACF also confirms this and shows that the error semms to be stationary.
 
 # Source Code
 
