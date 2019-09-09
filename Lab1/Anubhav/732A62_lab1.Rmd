@@ -219,10 +219,11 @@ set.seed(12345)
 rhine_data_wide <- rhine_data
 rhine_data_wide$dummy <- "1"
 rhine_data_wide$Month <- paste0("Month_",rhine_data_wide$Month)
-rhine_data_wide <- dcast(rhine_data_wide, formula = TotN_conc+Year+Time~Month, value.var = "dummy", fill = "0")
+rhine_data_wide <- dcast(rhine_data_wide, 
+                         formula = TotN_conc+Year+Time~Month, value.var = "dummy", fill = "0")
 
 lm_model_month_lag <- lm(data=rhine_data_wide, 
-                    TotN_conc~Month_1+Month_2+Month_3+Month_4+Month_5+Month_6+Month_7+
+                    TotN_conc~Time+Month_1+Month_2+Month_3+Month_4+Month_5+Month_6+Month_7+
                       Month_8+Month_9+Month_10+Month_11+Month_12)
 
 
@@ -240,9 +241,10 @@ e) Perform stepwise variable selection in model from step d). Which model gives 
 ```{r}
 set.seed(12345)
 
-lm_model_month_lag_step <- stepAIC(lm_model_month_lag, scope = list(upper = ~Month_1+Month_2+
-                                                                  Month_3+Month_4+Month_5+Month_6+Month_7+
-                                                                    Month_8+Month_9+Month_10+Month_11+Month_12, 
+lm_model_month_lag_step <- stepAIC(lm_model_month_lag, 
+                                   scope = list(upper = ~Time+Month_1+Month_2+
+                                                        Month_3+Month_4+Month_5+Month_6+Month_7+
+                                                        Month_8+Month_9+Month_10+Month_11+Month_12, 
                                                                   lower = ~1), trace = TRUE, 
                                    direction="backward")
 
