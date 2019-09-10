@@ -1,17 +1,17 @@
 ---
-title: "Time Series Analysis - Lab 01"
+title: "Time Series Analysis - Taching Session 01"
 author: "Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
   html_document:
     df_print: paged
     toc: true
     toc_float: false
     number_sections: false
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -40,3 +40,228 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **f)** $x_t - \frac{9}{4} x_{t-1} - \frac{9}{4} x_{t-2}=  w_t$
 
+
+## c) **Solution**
+
+### Roots of AR and MA Polynomials
+
+Applying the autoregressive operator for $\phi$ and $\theta$ gives us:
+
+AR: $\phi(B) = 1 - 3B$, thus $Z_{\phi} = (1, -3)$
+
+MA: $\theta(B) = 1 + 2B -8B^2$, thus $Z_{\theta} = (1, 2, -8)$
+
+For both parts we calculate the zero points. We start with AR.
+
+$$p_\phi(z) = 1-3z$$
+
+setting $p_\phi(z) = 0$
+
+$$1-3z = 0$$
+
+From that we get $z_{\theta1} = \frac{1}{3}$. Now we do the MA part.
+
+$$p_\theta(z) = 1 + 2z -8z^2$$
+
+setting $p_\theta(z) = 0$
+
+$$0 = 1 + 2z -8z^2$$
+
+First we divide by $-8$ and swap sides:
+
+$$z^2 - \frac{1}{4}z - \frac{1}{8} = 0$$
+
+We add $(\frac{1}{4}/2)^2$ on both sides
+
+$$z^2 - \frac{1}{4}z - \frac{1}{8} + \frac{1}{64} - \frac{8}{64} = \frac{1}{64}$$
+
+Next we create the polynomial form and add $\frac{8}{64}$ on both sides
+
+$$(z-\frac{1}{8})^2 = \frac{9}{64}$$
+
+Taking the square root
+
+$$z-\frac{1}{8}2 = \pm \frac{3}{8}$$
+
+Thus is follows that $z_{\theta1 = \frac{1}{2}}$ and $z_{\theta2 = - \frac{1}{4}}$.
+
+### Finding p and q
+
+To check for redundancy, we have to identify any common roots. As $z_\phi \cap z_\theta = \{\}$, $\phi(B)$ and $\theta(B)$ share no common roots and no redundancy is given.
+
+Therefore p and q are simply given by the highest order terms, so the model is $\text{ARMA}(p = 1, q = 2)$.
+
+### Causality and Invertibility
+
+**Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
+
+**Invertibility:** As $\forall Z_\phi: |Z_\phi| > 1$ is **not** given, the model is not invertible.
+
+
+## d) **Solution**
+
+### Roots of AR and MA Polynomials
+
+Applying the autoregressive operator for $\phi$ and $\theta$ gives us:
+
+AR: $\phi(B) = 1 - 2 + 2B^2$, thus $Z_{\phi} = (1, -2, 2)$
+
+MA: $\theta(B) = 1 - \frac{8}{9}B$, thus $Z_{\theta} = (1, -\frac{8}{9})$
+
+For both parts we calculate the zero points. We start with AR.
+
+$$p_\phi(z) = 1 - 2z + 2z^2$$
+
+Setting $p_\phi(z) = 0$ and swapping sides
+
+$$1 - 2z + 2z^2 = 0$$
+
+Divide by 2 and order
+
+$$z^2 - z + \frac{1}{2} = 0$$
+
+We add $(1/2)^2$ on both sides
+
+$$z^2 - z + \frac{1}{2} + \frac{1}{4} = \frac{1}{4}$$
+
+Next we create the polynomial form and substract $\frac{1}{2}$ on both sides:
+
+$$(z-\frac{1}{2})^2 = -\frac{1}{4}$$
+
+Taking the square root:
+
+$$z - \frac{1}{2} = \pm \frac{1}{2}i$$
+
+From that we get $z_{\theta1} = \frac{1}{2} + \frac{1}{2}i$ and $z_{\theta2} = \frac{1}{2} - \frac{1}{2}i$. Now we do the MA part.
+
+$$p_\theta(z) = 1 - \frac{8}{9}z$$
+
+setting $p_\theta(z) = 0$
+
+$$0 = 1 - \frac{8}{9}z$$
+
+So $z_{\theta1 = \frac{8}{9}}$
+
+### Finding p and q
+
+To check for redundancy, we have to identify any common roots. As $z_\phi \cap z_\theta = \{\}$, $\phi(B)$ and $\theta(B)$ share no common roots and no redundancy is given.
+
+Therefore p and q are simply given by the highest order terms, so the model is $\text{ARMA}(p = 1, q = 2)$.
+
+### Causality and Invertibility
+
+**Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
+
+**Invertibility:** As $\forall Z_\phi: |Z_\phi| > 1$ is **not** given, the model is not invertible.
+
+## e) **Solution**
+
+### Roots of AR and MA Polynomials
+
+Applying the autoregressive operator for $\phi$ and $\theta$ gives us:
+
+AR: $\phi(B) = 1 - 4B^2$, thus $Z_{\phi} = (1, 0, -4)$
+
+MA: $\theta(B) = 1 - B + \frac{1}{2}B^2$, thus $Z_{\theta} = (1, -1, -\frac{1}{2})$
+
+For both parts we calculate the zero points. We start with AR.
+
+$$p_\phi(z) = 1 - 4Z^2$$
+
+setting $p_\phi(z) = 0$
+
+$$1 - 4Z^2 = 0$$
+
+dividing by $4$ and putting $Z$ on one side
+
+$$Z^2 = \frac{1}{4}$$
+
+From that we get $z_{\theta1} = \frac{1}{2}$ and $z_{\theta2} = -\frac{1}{2}$. Now we do the MA part.
+
+$$p_\theta(z) = 1 - z + \frac{1}{2}z^2$$
+
+setting $p_\theta(z) = 0$
+
+$$0 = 1 - z + \frac{1}{2}z^2$$
+
+First we divide by $\frac{1}{2}$ and swap sides:
+
+$$z^2 -2z + 2 = 0$$
+
+We add $(\frac{2}{2}/2)^2$ on both sides
+
+$$z^2 -2z + 1 + 2 = 1$$
+
+Next we create the polynomial form and substract $-2$ on both sides
+
+$$(z-1)^2 = -1$$
+
+Taking the square root
+
+$$z - 1 = \pm i$$
+
+Thus is follows that $z_{\theta1} = 1 + 1i$ and $z_{\theta2} = 1 - 1i$.
+
+### Finding p and q
+
+To check for redundancy, we have to identify any common roots. As $z_\phi \cap z_\theta = \{\}$, $\phi(B)$ and $\theta(B)$ share no common roots and no redundancy is given.
+
+Therefore p and q are simply given by the highest order terms, so the model is $\text{ARMA}(p = 2, q = 2)$.
+
+### Causality and Invertibility
+
+**Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
+
+**Invertibility:** As $\forall Z_\phi: |Z_\phi| > 1$ is given, the model is invertible. The length of all elements of the set $Z_\phi$ is given by $|Z_\phi| = \sqrt{1^2 + (\pm 1)^2} \approx 1.414214$.
+
+## f) **Solution**
+
+### Roots of AR and MA Polynomials
+
+Applying the autoregressive operator for $\phi$ and $\theta$ gives us:
+
+AR: $\phi(B) = 1 - \frac{9}{4}B - \frac{9}{4}B^2$, thus $Z_{\phi} = (1, - \frac{9}{4}, - \frac{9}{4})$
+
+MA: $\theta(B) = 1$, thus $Z_{\theta} = (1)$
+
+For both parts we calculate the zero points. We start with AR.
+
+$$p_\phi(z) = 1 - \frac{9}{4}z - \frac{9}{4} z^2$$
+
+setting $p_\phi(z) = 0$
+
+$$1 - \frac{9}{4}z - \frac{9}{4} z^2 = 0$$
+
+dividing by $\frac{9}{4}$ and ordering
+
+$$z^2 + z - \frac{4}{9} = 0$$
+
+Adding $(\frac{1}{2})^2$ on both sides
+
+$$z^2 + z + \frac{1}{4} - \frac{4}{9} = \frac{1}{4}$$
+
+Forming the polynimial and adding $\frac{4}{9}$
+
+$$(z + \frac{1}{2})^2 = \frac{25}{36}$$
+
+Taking the square root
+
+$$z + \frac{1}{2} = \pm \frac{5}{6}$$
+
+From that we get $z_{\theta1} = \frac{1}{3}$ and $z_{\theta2} = -\frac{4}{3}$. Now we do the MA part.
+
+$$p_\theta(z) = 1$$
+
+As setting this to $0$ is an inequality, this ARMA model does not have an MA part.
+
+### Finding p and q
+
+To check for redundancy, we have to identify any common roots. As $\theta(B)$ is not given, it does not really make sense to ask this question. There are no common roots.
+
+Therefore p and q are simply given by the highest order terms, so the model is $\text{ARMA}(p = 2, q = 0)$ which can also be expressed as $\text{AR}(2)$.
+
+### Causality and Invertibility
+
+**Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
+
+**Invertibility:** As the model does not have an MA part, it does not make sense to talk about invertibility as an $\text{MA}(\infty)$ representation cannot exist for something that is non-existent. Also a (weak) stationary property does not make sense in this case.
