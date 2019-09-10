@@ -508,38 +508,55 @@ ggplot(df) +
 df = na.omit(df)
 
 # Creating lags
-df$oil_log_lag_1 = stats::lag(oil_log_diff, 1)
-df$oil_log_lag_2 = stats::lag(oil_log_diff, 2)
-df$oil_log_lag_3 = stats::lag(oil_log_diff, 3)
+#df$oil_log_lag_1 = stats::lag(oil_log_diff, 1)
+#df$oil_log_lag_2 = stats::lag(oil_log_diff, 2)
+#df$oil_log_lag_3 = stats::lag(oil_log_diff, 3)
 df$gas_log_lag_1 = stats::lag(gas_log_diff, 1)
 df$gas_log_lag_2 = stats::lag(gas_log_diff, 2)
 df$gas_log_lag_3 = stats::lag(gas_log_diff, 3)
 
 # Smoothing
-df$smooth_one_week = ksmooth(x = df$oil_log_lag_1,
+df$smooth_one_week = ksmooth(x = oil_log_diff,
                              y = df$gas_log_lag_1,
-                             bandwidth = 1/52)$y
+                             bandwidth = 2/52,
+                             kernel = "normal")$y
 
-df$smooth_two_week = ksmooth(x = df$oil_log_lag_2,
+df$smooth_two_week = ksmooth(x = oil_log_diff,
                              y = df$gas_log_lag_2,
-                             bandwidth = 1/52)$y
+                             bandwidth = 2/52,
+                             kernel = "normal")$y
 
-df$smooth_three_week = ksmooth(x = df$oil_log_lag_3,
+df$smooth_three_week = ksmooth(x = oil_log_diff,
                                y = df$gas_log_lag_3,
-                               bandwidth = 1/52)$y
+                               bandwidth = 2/52,
+                               kernel = "normal")$y
 
 ```
 
 ```{r, echo=FALSE}
 
 ggplot(df) +
-  geom_line(aes(x = date, y = smooth_one_week, colour = "One Week")) +
-  geom_line(aes(x = date, y = smooth_two_week, colour = "Two Weeks")) +
-  geom_line(aes(x = date, y = smooth_three_week, colour = "Three Weeks")) +
+  geom_point(aes(x = oil_log_diff, y = df$smooth_one_week, colour = "One Week")) +
   labs(title = "Smoothed Lag Differences Between Oil and Gas by Weeks",
-       y = "Smoothed Lag Difference Between x_t and y_t",
-       x = "Time", color = "Legend") +
-  scale_color_manual(values = c("#C70039", "#581845", "#FFC300")) +
+       y = "Smoothed, Logged and 1 Week Lagged Gas Difference",
+       x = "Logged Oil Difference", color = "Legend") +
+  scale_color_manual(values = c("#C70039")) +
+  theme_minimal()
+
+ggplot(df) +
+  geom_point(aes(x = oil_log_diff, y = df$smooth_two_week, colour = "Two Weeks")) +
+  labs(title = "Smoothed Lag Differences Between Oil and Gas by Weeks",
+       y = "Smoothed, Logged and 2 Weeks Lagged Gas Difference",
+       x = "Logged Oil Difference", color = "Legend") +
+  scale_color_manual(values = c("#581845")) +
+  theme_minimal()
+
+ggplot(df) +
+  geom_point(aes(x = oil_log_diff, y = df$smooth_three_week, colour = "Three Weeks")) +
+  labs(title = "Smoothed Lag Differences Between Oil and Gas by Weeks",
+       y = "Smoothed, Logged and 3 Weeks Lagged Gas Difference",
+       x = "Logged Oil Difference", color = "Legend") +
+  scale_color_manual(values = c("#FFC300")) +
   theme_minimal()
 
 ```
