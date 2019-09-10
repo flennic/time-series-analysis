@@ -340,11 +340,22 @@ df <- na.omit(df)
 
 ggplot(data=df, aes(x=oil_price_one_diff, y = gas_price_one_diff)) + geom_point() +
   geom_line(aes(y= smooth_one_week_lag, color= "smooth_one_week_lag")) +
+      scale_colour_manual("", breaks = c("smooth_one_week_lag"),
+                        values = c("#CC79A7")) +
+  ggtitle("Smoothened Plot of one week lag")
+
+ggplot(data=df, aes(x=oil_price_one_diff, y = gas_price_two_diff)) + geom_point() +
     geom_line(aes(y= smooth_two_week_lag, color= "smooth_two_week_lag")) +
+      scale_colour_manual("", breaks = c("smooth_two_week_lag"),
+                        values = c("#56B4E9")) +
+  ggtitle("Smoothened Plot of two week lag")
+
+
+ggplot(data=df, aes(x=oil_price_one_diff, y = gas_price_three_diff)) + geom_point() +
     geom_line(aes(y= smooth_three_week_lag, color= "smooth_three_week_lag")) +
-      scale_colour_manual("", breaks = c("smooth_one_week_lag", "smooth_two_week_lag", "smooth_three_week_lag"),
-                        values = c("#CC79A7", "#000000", "#D55E00")) +
-  ggtitle("Smoothened Plot of lag")
+      scale_colour_manual("", breaks = c("smooth_three_week_lag"),
+                        values = c("#D55E00")) +
+  ggtitle("Smoothened Plot of three week lag")
 
 ```
 
