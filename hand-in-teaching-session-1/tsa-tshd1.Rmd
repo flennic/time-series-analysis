@@ -1,0 +1,42 @@
+---
+title: "Time Series Analysis - Lab 01"
+author: "Maximilian Pfundstein (maxpf364)"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: false
+    number_sections: false
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Assignment 12
+
+**Exercise:** Let ${x_t}$ be a zero-mean, unit-variance stationary process with autocorrelation function $\rho_h$. Suppose that $\mu_t$ is a nonconstant function and that $\sigma_t$ is a positive-valued nonconstant function. The observed series is formed as $y_t = \mu_t + \sigma_t x_t$
+
+**a)** Find the mean and covariance function for the ${y_t}$ process.
+
+**b)** Show that the autocorrelation function for the ${y_t}$ process depends only on the time lag. Is the ${y_t}$ process stationary?
+
+**c)** Is it possible to have a time series with a constant mean and with $Corr(y_t, y_{t+h})$ free of $t$ but with ${y_t}$ *not* stationary?
+
+# Assignment 18
+
+**Exercise:** For each of the following ARMA models, find the roots of the AR and MA polynomials, identify the values of p and q for which they are ARMA(p,q) (be careful of parameter redundancy), determine whether they are causal, and determine whether they are invertible. In each case, $w_t \sim \mathcal{N}(0,1)$.
+
+**c)** $x_t - 3 x_{t-1} = w_t + 2 w_{t-1} - 8 w_{t-2}$
+
+**d)** $x_t - 2 x_{t-1} + 2 x_{t-2} = w_t - \frac{8}{9} w_{t-1}$
+
+**e)** $x_t - 4 x_{t-2} = w_t - w_{t-1} + 0.5 w_{t-2}$
+
+**f)** $x_t - \frac{9}{4} x_{t-1} - \frac{9}{4} x_{t-2}=  w_t$
+
