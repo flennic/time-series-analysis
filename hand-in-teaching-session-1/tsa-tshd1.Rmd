@@ -2,6 +2,8 @@
 title: "Time Series Analysis - Taching Session 01"
 author: "Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
+header-includes:
+   - \usepackage{xcolor}
 output:
   pdf_document:
     toc: true
@@ -26,7 +28,51 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **b)** Show that the autocorrelation function for the ${y_t}$ process depends only on the time lag. Is the ${y_t}$ process stationary?
 
-**c)** Is it possible to have a time series with a constant mean and with $Corr(y_t, y_{t+h})$ free of $t$ but with ${y_t}$ *not* stationary?
+**c)** Is it possible to have a time series with a constant mean and with $\text{corr}(y_t, y_{t+h})$ free of $t$ but with ${y_t}$ *not* stationary?
+
+## Mean and Covariance Function
+
+### Mean
+
+$$E[y_t] = E[\mu_t] + E[\sigma_tx_t] = E[\mu_t] + E[\sigma_t] \color{red}{E[x_t]}$$
+
+As $\color{red}{E[x_t]}$ is $0$, we obtain
+
+$$= E[\mu_t] = \mu_t$$
+
+As $\mu_t$ is a non-constant function by definition.
+
+### Covariance Function
+
+$$\gamma(s,t) = \text{cov}(y_s, y_t) = E[(y_s - E[y_s])(y_t - E[y_t])]$$
+
+We substitude $y_s = \mu_t + \sigma_t x_t$ (by definition) and we already know that $E[s_t] = \mu_t$.
+
+$$= E[\mu_s + \sigma_s x_s - \mu_s)(\mu_t + \sigma_t x_t - \mu_t)] = E[\sigma_s x_s \sigma_t x_t]$$
+
+As $\sigma$ is a function by definition, there is no randomness and we can put it out of the expectation.
+
+$$= \sigma_s \sigma_t E[ x_s x_t]$$
+
+We know that $E[x_t] = 0$, so we can easily add it to get a known shape.
+
+$$= \sigma_s \sigma_t E[ (x_s - E[x_s]) (x_t - E[x_t])]$$
+
+The known shape is the definition of the covariance, so we obtain the following.
+
+$$= \sigma_s \sigma_t \text{cov}(x_s, x_t) = \sigma_s \sigma_t \gamma(x_s, x_t)$$
+
+The ACF is defined by
+
+$$\rho(s,t) = \frac{\gamma(x_s, x_t)}{\sqrt{\gamma(x_s, x_s)\gamma(x_t, x_t)}}$$
+
+Solving for $\gamma(s,t)$ and then plugging in in the equation above we obtain
+
+$$= \sigma_s \sigma_t \rho(x_s, x_t) \sqrt{\gamma(x_s, x_s)\gamma(x_t, x_t)}$$
+
+We know that $\gamma(x_s,x_s) = \text{var}(x_s) = 1$ as that is given by definition. Therefore the ACF is finally given by
+
+$$= \sigma_s \sigma_t \rho(x_s, x_t) = \sigma_s \sigma_t \rho_x(s, t)$$
 
 # Assignment 18
 
