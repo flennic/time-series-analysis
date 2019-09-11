@@ -1,5 +1,5 @@
 ---
-title: "Time Series (732A62) Lab1"
+title: "Time Series (732A62) Lab1 Group 7"
 author: "Anubhav Dikshit(anudi287) and Maximilian Pfundstein(maxpf364)"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
