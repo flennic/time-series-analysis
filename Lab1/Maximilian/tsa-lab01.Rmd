@@ -1,5 +1,5 @@
 ---
-title: "Time Series Analysis - Lab 01"
+title: "Time Series Analysis - Lab 01 (Group 7)"
 author: "Anubhav Dikshit (anudi287) and Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
 output:
@@ -16,9 +16,8 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(ggplot2)
-library(readr)
-library(dplyr)
+library(tidyverse)
+library(MASS)
 library(astsa)
 set.seed(12345)
 ```
@@ -72,8 +71,6 @@ series2 = generate_S2(n)
 
 series1_filtered = stats::filter(series1, filter = rep(0.2, 5), sides = 1)
 series2_filtered = stats::filter(series2, filter = rep(0.2, 5), sides = 1)
-
-
 
 ```
 
@@ -153,11 +150,12 @@ We use the function `polyroot()` to see if any of the (complex) zero points lies
 
 Z_phi = c(1, -4, 2, 0, 0, 1)
 
-isCausal = function(Z) {
+isOutsideUnitCircle = function(Z) {
   return(all(Mod(polyroot(Z)) > 1))
 }
 
-isCausal(Z_phi)
+isOutsideUnitCircle(Z_phi)
+polyroot(Z_phi)
 
 ```
 
@@ -175,11 +173,8 @@ $$Z_\theta = (1, 0, 3, 0, -1, 0, -4)$$
 
 Z_theta = c(1, 0, 3, 0, -1, 0, 4)
 
-isInvertible = function(Z) {
-  return(all(Mod(poly(Z)) > 1))
-}
-
-isInvertible(Z_theta)
+isOutsideUnitCircle(Z_theta)
+polyroot(Z_theta)
 
 ```
 
@@ -227,7 +222,7 @@ rhine_time_series = ts(data = rhine$TotN_conc, start = c(1989,1),
                        frequency = 12)
 
 # Normal Time Series
-plot(rhine_time_series)
+plot(rhine_time_series, main = "Time Series of Nitrogen Concentration in Rhine")
 
 # 12 Lags as we have 12 month each year
 lag.plot(rhine_time_series, lags = 12)
@@ -270,7 +265,7 @@ summary(rhine_linear_model)
 detrended = rhine_time_series - rhine_linear_model$fitted.values
 plot(detrended)
 
-plot(rhine_linear_model)
+#plot(rhine_linear_model)
 plot(rhine_linear_model$residuals)
 acf(rhine_linear_model$residuals)
 
@@ -282,7 +277,7 @@ acf(rhine_linear_model$residuals)
 
 ```
 
-**Answer:** The first picture shows the detrended data, containing only the seasonality and the error. Clearly, the seasonality is visible. When looking at the ACF of the residuals we can also observe the seasonality and we also see that it's getting lower over time. **TODO**.
+**Answer:** The first picture shows the detrended data, containing only the seasonality and the error. Clearly, the seasonality is visible. When looking at the ACF of the residuals we can also observe the seasonality and we also see that it's getting lower over time. As the residuals are not normally distributed we assume that there is still more to explain by our model.
 
 **Task c):** Eliminate the trend by fitting a kernel smoother with respect to t to the time series (choose a reasonable bandwidth yourself so the fit looks reasonable). Analyze the residual pattern and the sample ACF of the residuals and compare it to the ACF from step b). Conclusions? Do residuals seem to represent a stationary series?
 
@@ -393,15 +388,34 @@ seasonal_model = lm(formula = TotN_conc ~ Time + January + February + March + Ap
 
 detrended2 = rhine_time_series - seasonal_model$fitted.values
 
-plot(detrended2)
+#plot(detrended2)
 plot(seasonal_model)
 
 acf(seasonal_model$residuals)
-plot(seasonal_model$residuals)
+plot(seasonal_model$residuals, type='l', main = "Residualds after fitting model")
 
 ```
 
-**Answer:** We can clearly see that the trend is gone. Also it looks like that after detrending with this model, the remaining data/model seems to become stationary. **TODO**
+**Answer:** We can clearly see that the trend is gone. Also it looks like that after detrending with this model, the remaining data/model seems to become stationary. Still the errors seems to contain some information as it is not normal and still shows the seasonality. Also we have one component let for low lag.
+
+```{r}
+
+set.seed(12345)
+
+aic_selection = stepAIC(seasonal_model, scope = list(upper = ~ .,
+                                     lower = ~ 1),
+                trace = TRUE, 
+                direction="backward")
+
+```
+
+The following features are left in the model:
+
+```{r}
+
+colnames(aic_selection$model)
+
+```
 
 # Analysis of oil and gas time series
 
@@ -470,6 +484,9 @@ ggplot(df) +
 oil_log_diff = diff(df$oil_log, differences = 1)
 gas_log_diff = diff(df$gas_log, differences = 1)
 
+#oil_log_diff = diff(df$oil, differences = 1)
+#gas_log_diff = diff(df$gas, differences = 1)
+
 df$x_t = c(NA, oil_log_diff) #oil
 df$y_t = c(NA, gas_log_diff) #gas
 
@@ -496,7 +513,7 @@ ggplot(df) +
 
 ```
 
-**Answer:** Now it seems like both series are stationary and also their variance semms (still) to be normalized.
+**Answer:** Now it seems like both series are stationary and also their variance seems (still) to be constant.
 
 **Task d):** Exhibit scatterplots of $x_t$ and $y_t$ for up to three weeks of lead time of $x_t$; include a nonparametric smoother in each plot and comment the results: are there outliers? Are the relationships linear? Are there changes in the trend?
 
@@ -511,23 +528,23 @@ df = na.omit(df)
 #df$oil_log_lag_1 = stats::lag(oil_log_diff, 1)
 #df$oil_log_lag_2 = stats::lag(oil_log_diff, 2)
 #df$oil_log_lag_3 = stats::lag(oil_log_diff, 3)
-df$gas_log_lag_1 = stats::lag(gas_log_diff, 1)
-df$gas_log_lag_2 = stats::lag(gas_log_diff, 2)
-df$gas_log_lag_3 = stats::lag(gas_log_diff, 3)
+df$yt_lag_1 = stats::lag(df$y_t, 1)
+df$yt_lag_2 = stats::lag(df$y_t, 2)
+df$yt_lag_3 = stats::lag(df$y_t, 3)
 
 # Smoothing
-df$smooth_one_week = ksmooth(x = oil_log_diff,
-                             y = df$gas_log_lag_1,
+df$smooth_one_week = ksmooth(x = df$x_t,
+                             y = df$yt_lag_1,
                              bandwidth = 2/52,
                              kernel = "normal")$y
 
-df$smooth_two_week = ksmooth(x = oil_log_diff,
-                             y = df$gas_log_lag_2,
+df$smooth_two_week = ksmooth(x = df$x_t,
+                             y = df$yt_lag_2,
                              bandwidth = 2/52,
                              kernel = "normal")$y
 
-df$smooth_three_week = ksmooth(x = oil_log_diff,
-                               y = df$gas_log_lag_3,
+df$smooth_three_week = ksmooth(x = df$x_t,
+                               y = df$yt_lag_3,
                                bandwidth = 2/52,
                                kernel = "normal")$y
 
@@ -536,7 +553,8 @@ df$smooth_three_week = ksmooth(x = oil_log_diff,
 ```{r, echo=FALSE}
 
 ggplot(df) +
-  geom_point(aes(x = oil_log_diff, y = df$smooth_one_week, colour = "One Week")) +
+  geom_line(aes(x = df$x_t, y = df$smooth_one_week)) +
+  geom_point(aes(x = df$x_t, y = df$yt_lag_1, colour = "One Week")) +
   labs(title = "Smoothed Lag Differences Between Oil and Gas by Weeks",
        y = "Smoothed, Logged and 1 Week Lagged Gas Difference",
        x = "Logged Oil Difference", color = "Legend") +
@@ -544,25 +562,28 @@ ggplot(df) +
   theme_minimal()
 
 ggplot(df) +
-  geom_point(aes(x = oil_log_diff, y = df$smooth_two_week, colour = "Two Weeks")) +
+  geom_line(aes(x = df$x_t, y = df$smooth_two_week)) +
+  geom_point(aes(x = df$x_t, y = df$yt_lag_2, colour = "Two Weeks")) +
   labs(title = "Smoothed Lag Differences Between Oil and Gas by Weeks",
-       y = "Smoothed, Logged and 2 Weeks Lagged Gas Difference",
+       y = "Smoothed, Logged and 2 Week Lagged Gas Difference",
        x = "Logged Oil Difference", color = "Legend") +
   scale_color_manual(values = c("#581845")) +
   theme_minimal()
 
 ggplot(df) +
-  geom_point(aes(x = oil_log_diff, y = df$smooth_three_week, colour = "Three Weeks")) +
+  geom_line(aes(x = df$x_t, y = df$smooth_three_week)) +
+  geom_point(aes(x = df$x_t, y = df$yt_lag_3, colour = "Three Weeks")) +
   labs(title = "Smoothed Lag Differences Between Oil and Gas by Weeks",
-       y = "Smoothed, Logged and 3 Weeks Lagged Gas Difference",
+       y = "Smoothed, Logged and 3 Week Lagged Gas Difference",
        x = "Logged Oil Difference", color = "Legend") +
   scale_color_manual(values = c("#FFC300")) +
   theme_minimal()
 
+
 ```
 
 
-**Answer:** **TODO** Fix this shit :D
+**Answer:** We have outliers in all three versions, so they don't disappear. The relaionship remains linear for all versions as well. We do not observe any change in the trend.
 
 **Task e):** Fit the following model: $y_t = \alpha_0 + \alpha_1I(x_t > 0) + \beta_1 x_t + \beta_2x_{t-1} + w_t$ and check which coefficients seem to be significant. How can this be interpreted? Analyze the residual pattern and the ACF of the residuals.
 
@@ -580,11 +601,11 @@ summary(model_e)
 plot(model_e)
 
 acf(model_e$residuals)
-plot(model_e$residuals)
+plot(model_e$residuals, main = "Plotted residuals")
 
 ```
 
-**Answer:** It seems like the feature $x_t$ is significant. The residuals look like white noise (with a specific $\sigma$), which means that we explained everything in the data that is predictable. Looking at the ACF also confirms this and shows that the error semms to be stationary.
+**Answer:** It seems like the feature $x_t$ is significant. The residuals look like white noise (with a specific $\sigma$), which means that we explained everything in the data that is predictable. Looking at the ACF also confirms this and shows that the error seems to be stationary.
 
 # Source Code
 
