@@ -74,16 +74,16 @@ df <- cbind(x,x2,smooth_x,smooth_x2) %>% as.data.frame() %>% mutate(index=1:100)
 
 ggplot(df, aes(x=index)) + 
   geom_line(aes(y=x, color="Original Time Series")) + 
-  geom_line(aes(y=smooth_x, color="Smoothened Time Series")) + 
-  ggtitle("Plot of 1st time series and its smoothened version") +
-    scale_colour_manual("", breaks = c("Original Time Series", "Smoothened Time Series"),
+  geom_line(aes(y=smooth_x, color="Smoothed Time Series")) + 
+  ggtitle("Plot of 1st time series and its smoothed version") +
+    scale_colour_manual("", breaks = c("Original Time Series", "Smoothed Time Series"),
                         values = c("#CC79A7", "#000000"))
 
 ggplot(df, aes(x=index)) + 
   geom_line(aes(y=x2, color="Original Time Series")) + 
-  geom_line(aes(y=smooth_x2, color="Smoothened Time Series")) + 
-  ggtitle("Plot of 2nd time series and its smoothened version") +
-    scale_colour_manual("", breaks = c("Original Time Series", "Smoothened Time Series"),
+  geom_line(aes(y=smooth_x2, color="Smoothed Time Series")) + 
+  ggtitle("Plot of 2ND time series and its smoothed version") +
+    scale_colour_manual("", breaks = c("Original Time Series", "Smoothed Time Series"),
                         values = c("#CC79A7", "#000000"))
 
 ```
@@ -115,7 +115,7 @@ polyroot(z)
 any(Mod(polyroot(z))<=1)
 ```
 
-Analysis: Baring one of the roots all are inside the unit circle. Thus the time series is neither invertiable or causal.
+Analysis: Baring one of the roots all are inside the unit circle. Thus the time series is neither invertible or causal.
 
 \fbox{\begin{minipage}{46.7em}
 c) Use built-in R functions to simulate 100 observations from the process $ x_t + \frac{3}{4} x_{t-1} = w_t - \frac{1}{9} w_{t-2}$ compute sample ACF and theoretical ACF, use seed 54321. Compare the ACF plots.
@@ -129,14 +129,14 @@ series <- arima.sim(n = 100, list(ar = c(-3/4), ma = c(0,-1/9)))
 acf(series)
 acf(ARMAacf(ar = c(-3/4), ma =  c(0,-1/9), lag.max = 20))
 ```
-Analysis: In the theortical ACF, only the 1 and 2nd lag components were significant, while using the sample ACF function we get many more lag components as significant.
+Analysis: In the theoretical ACF, only the 1 and 2ND lag components were significant, while using the sample ACF function we get many more lag components as significant.
 
 # Assignment 2. Visualization, detrending and residual analysis of Rhine data.
 The data set Rhine.csv contains monthly concentrations of total nitrogen in the Rhine River in the period 1989-2002.
 
 
 \fbox{\begin{minipage}{46.7em}
-a) Import the data to R, convert it appropriately to ts object (use function ts()) and explore it by plotting the time series, creating scatter plots of $x_t$ against $x_{t-1},....x_{t-12}$. Analyze the time series plot and the scatter plots: Are there any trends, linear or seasonal, in the time series? When during the year is the concentration highest? Are there any special patterns in the data or scatterplots? Does the variance seem to change over time? Which variables in the scatterplots seem to have a significant relation to each other?
+a) Import the data to R, convert it appropriately to ts object (use function ts()) and explore it by plotting the time series, creating scatter plots of $x_t$ against $x_{t-1},....x_{t-12}$. Analyze the time series plot and the scatter plots: Are there any trends, linear or seasonal, in the time series? When during the year is the concentration highest? Are there any special patterns in the data or scatter plots? Does the variance seem to change over time? Which variables in the scatter plots seem to have a significant relation to each other?
 \end{minipage}}
 
 ```{r}
@@ -161,9 +161,9 @@ ggAcf(rhine_data_ts) + ggtitle("ACF for Total Nitrogen Concentration")
 
 Analysis: Its evident from the time series plot that there is a decreasing trend and there is a seasonality to the concentration of nitrogen. 
 
-From the scatter plots of lag concentration vs. time we can conclude that correleation between concentration and lag is least in the middle months of the years than the begining and end months.
+From the scatter plots of lag concentration vs. time we can conclude that correlation between concentration and lag is least in the middle months of the years than the beginning and end months.
 
-As from above we from ACF plots we can also conclude that the components of the end of the year and begining of the year have more impact than the middle year components.
+As from above we from ACF plots we can also conclude that the components of the end of the year and beginning of the year have more impact than the middle year components.
 
 \fbox{\begin{minipage}{46.7em}
 b) Eliminate the trend by fitting a linear model with respect to t to the time series. Is there a significant time trend? Look at the residual pattern and the sample ACF of the residuals and comment how this pattern might be related to seasonality of the series.
@@ -214,8 +214,8 @@ acf(model_smooth_lag_10_residual)
 acf(model_smooth_lag_20_residual)
 ```
 
-Analysis: In the above steps we have compared the residual pattern from the linear model, kernel smoother with bandwith 4, 10
-and bandwith 20. Increasing the bandwidth does not seems to have much impact on the residual pattern and it is evident that it is not stationary, there is a large seasonality effect and a downwards trend still present in the plot.
+Analysis: In the above steps we have compared the residual pattern from the linear model, kernel smoother with bandwidth 4, 10
+and bandwidth 20. Increasing the bandwidth does not seems to have much impact on the residual pattern and it is evident that it is not stationary, there is a large seasonality effect and a downwards trend still present in the plot.
 
 \fbox{\begin{minipage}{46.7em}
 d) Eliminate the trend by fitting the following so-called seasonal means model:
@@ -244,7 +244,7 @@ acf(lm_model_month_lag$residuals)
 Analysis: From the ACF plot we can see that the time series is not dependents on the components (barring maybe 1) and thus is stationary. From the residual plot we can see that there is a small trend, we can use some variable elimination to refine the model.
 
 \fbox{\begin{minipage}{46.7em}
-e) Perform stepwise variable selection in model from step d). Which model gives you the lowest AIC value? Which variables are left in the model?
+e) Perform step-wise variable selection in model from step d). Which model gives you the lowest AIC value? Which variables are left in the model?
 \end{minipage}}
 
 ```{r}
@@ -285,6 +285,8 @@ autoplot(ts(cbind(data_oil, data_gas), start = 2000, frequency = 52)) +
            ggtitle("Price of Oil and Gas vs. Years")
 ```
 
+Analysis: No the series is not stationary since we see that it is time dependent. Both the series seemed to be correlated to each other.
+
 \fbox{\begin{minipage}{46.7em}
 b) Apply log-transform to the time series and plot the transformed data. In what respect did this transformation made the data easier for the analysis?
 \end{minipage}}
@@ -297,6 +299,7 @@ autoplot(ts(cbind(log(data_oil), log(data_gas)), start = 2000, frequency = 52)) 
            ggtitle("Log of price of Oil and Gas vs. Years")
 ```
 
+Analysis: Taking log reduces the variation(along the y-axis) so its easier to compare.
 
 \fbox{\begin{minipage}{46.7em}
 c) To eliminate trend, compute the first difference of the transformed data, plot the detrended series, check their ACFs and analyze the obtained plots. Denote the data obtained here as $x_t$(oil) and $y_t$(gas).
@@ -318,8 +321,10 @@ ggAcf(diff(data_gas, differences = 1), data_gas)
 
 ```
 
+Analysis: We can say that from the ACF plot that the components that are needed to describe the series have reduced and both the series appear to be stationary barring a few points/peaks.
+
 \fbox{\begin{minipage}{46.7em}
-d) Exhibit scatterplots of $x_t$ and $y_t$ for up to three weeks of lead time of $x_t$ include a nonparametric smoother in each plot and comment the results: are there outliers? Are the relationships linear? Are there changes in the trend?
+d) Exhibit scatter plots of $x_t$ and $y_t$ for up to three weeks of lead time of $x_t$ include a non-parametric smoother in each plot and comment the results: are there outliers? Are the relationships linear? Are there changes in the trend?
 \end{minipage}}
 
 ```{r}
@@ -351,22 +356,24 @@ ggplot(data=df, aes(x=oil_price_one_diff, y = gas_price_one_diff)) + geom_point(
   geom_line(aes(y= smooth_one_week_lag, color= "smooth_one_week_lag")) +
       scale_colour_manual("", breaks = c("smooth_one_week_lag"),
                         values = c("#CC79A7")) +
-  ggtitle("Smoothened Plot of one week lag")
+  ggtitle("Smoothed Plot of one week lag")
 
 ggplot(data=df, aes(x=oil_price_one_diff, y = gas_price_two_diff)) + geom_point() +
     geom_line(aes(y= smooth_two_week_lag, color= "smooth_two_week_lag")) +
       scale_colour_manual("", breaks = c("smooth_two_week_lag"),
                         values = c("#56B4E9")) +
-  ggtitle("Smoothened Plot of two week lag")
+  ggtitle("Smoothed Plot of two week lag")
 
 
 ggplot(data=df, aes(x=oil_price_one_diff, y = gas_price_three_diff)) + geom_point() +
     geom_line(aes(y= smooth_three_week_lag, color= "smooth_three_week_lag")) +
       scale_colour_manual("", breaks = c("smooth_three_week_lag"),
                         values = c("#D55E00")) +
-  ggtitle("Smoothened Plot of three week lag")
+  ggtitle("Smoothed Plot of three week lag")
 
 ```
+
+Analysis: The correlation is a weakly increasing one. There are outliers present in all three plots, the lag of weeks has little impact on the plots.
 
 \fbox{\begin{minipage}{46.7em}
 e) Fit the following model: $y_t = \alpha_0 + \alpha_1 I(x_t > 0) + \beta_1 x_t + \beta_2 x_{t-1} + w_t$ and check which coefficients seem to be significant. How can this be interpreted? Analyze the residual pattern and the ACF of the residuals.
@@ -377,12 +384,20 @@ set.seed(12345)
 
 df$oil_price_two_diff = lag(df$oil_price_one_diff,2)
 df$x_t_more_zero <- ifelse(df$oil_price_one_diff>0,"1","0")
-lm_model_lag <- lm(data=df, formula = gas_price_one_diff~x_t_more_zero+oil_price_one_diff+oil_price_two_diff)
+lm_model_lag <- lm(data=df, formula = gas_price_one_diff~x_t_more_zero+
+                     oil_price_one_diff+oil_price_two_diff)
+summary(lm_model_lag)
 
-plot(lm_model_lag$residuals, type = 'l')
+plot(lm_model_lag$residuals, type = 'l', main="Residual vs. Time")
 ggAcf(lm_model_lag$residuals)
 
 ```
+
+Analysis: According to the summary none of the variable seems to be significant. The dummy variable has a positive coefficient which means that an increase in oil will also increase the gas. 
+
+We can also see from the plot of residuals that the residual seems to be constant over time with the exception of some outliers, thus the series is reaching the stationary conditions barring some regions.
+
+The ACF plots confirms our findings from the residual plot that there is one single components which shows some auto-correlation.
 
 # Appendix
 
