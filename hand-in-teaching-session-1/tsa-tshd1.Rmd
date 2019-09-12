@@ -1,19 +1,19 @@
 ---
-title: "Time Series Analysis - Taching Session 01"
+title: "Time Series Analysis - Teaching Session 01"
 author: "Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
 header-includes:
    - \usepackage{xcolor}
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   html_document:
     df_print: paged
     toc: true
     toc_float: false
     number_sections: false
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Assignment 12
 
-**Exercise:** Let ${x_t}$ be a zero-mean, unit-variance stationary process with autocorrelation function $\rho_h$. Suppose that $\mu_t$ is a nonconstant function and that $\sigma_t$ is a positive-valued nonconstant function. The observed series is formed as $y_t = \mu_t + \sigma_t x_t$
+**Exercise:** Let ${x_t}$ be a zero-mean, unit-variance stationary process with autocorrelation function $\rho_h$. Suppose that $\mu_t$ is a nonconstant function and that $\sigma_t$ is a positive-valued nonconstant function. The observed series is formed as $y_t = \mu_t + \sigma_t x_t$.
 
 **a)** Find the mean and covariance function for the ${y_t}$ process.
 
@@ -34,7 +34,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Mean
 
-$$E[y_t] = E[\mu_t] + E[\sigma_tx_t] = E[\mu_t] + E[\sigma_t] \color{red}{E[x_t]}$$
+$$E[y_t] = E[\mu_t] + E[\sigma_tx_t] = E[\mu_t] + \sigma_t \color{red}{E[x_t]}$$
 
 As $\color{red}{E[x_t]}$ is $0$, we obtain
 
@@ -46,7 +46,7 @@ As $\mu_t$ is a non-constant function by definition.
 
 $$\gamma(s,t) = \text{cov}(y_s, y_t) = E[(y_s - E[y_s])(y_t - E[y_t])]$$
 
-We substitude $y_s = \mu_t + \sigma_t x_t$ (by definition) and we already know that $E[s_t] = \mu_t$.
+We substitude $y_s = \mu_t + \sigma_t x_t$ (by definition) and we already know that $E[x_t] = \mu_t$.
 
 $$= E[\mu_s + \sigma_s x_s - \mu_s)(\mu_t + \sigma_t x_t - \mu_t)] = E[\sigma_s x_s \sigma_t x_t]$$
 
@@ -73,6 +73,56 @@ $$= \sigma_s \sigma_t \rho(x_s, x_t) \sqrt{\gamma(x_s, x_s)\gamma(x_t, x_t)}$$
 We know that $\gamma(x_s,x_s) = \text{var}(x_s) = 1$ as that is given by definition. Therefore the ACF is finally given by
 
 $$= \sigma_s \sigma_t \rho(x_s, x_t) = \sigma_s \sigma_t \rho_x(s, t)$$
+
+## Lag only Dependency and Stationarity of $y_t$
+
+### Lag only Dependency
+
+The autocorrelation is given by
+
+$$\rho(s,t) = \frac{\gamma(s, t)}{\sqrt{\gamma(s, s)\gamma(t, t)}}$$
+
+Plugging in the ACF from the exercise before gives us
+
+$$=\frac{\sigma_s \sigma_t \rho_x(s,t)}{\sqrt{\sigma_s \sigma_s \rho_x(s,s) \sigma_t \sigma_t \rho_x(t,t)}}$$
+
+As $\rho_x(a, a) = \frac{\gamma(0)}{\gamma(0)} = 1$ we can rewrite as
+
+$$= \frac{\sigma_s \sigma_t \rho_x(s,t)}{\sigma_s \sigma_t} = \rho_x(s,t)$$
+
+Setting $t = s + h$ we get the following, as the process $x_t$ is stationary by definition
+
+$$\rho_x(s,s + h) = \rho(h)$$
+
+### Stationarity of $y_t$
+
+To show that $y_t$ is stationary, the following three conditions must be met:
+
+- $E[y_t] = \text{constant}$
+- $\gamma(s,t) = \gamma(|t + h - t|)$
+- $\text{var}(x_t) < \infty$
+
+The first condition if not given, as $E[y_t] = \mu_t$ and by definition $\mu_t$ is a non-constant function. Thereby $y_t$ is **not** stationary.
+
+## Possibility of a Specific Time Series
+
+For having a non-stationary time series that meets the condition, at least one of the following conditions must be violated.
+
+- $E[y_t] = \text{constant}$
+- $\gamma(s,t) = \gamma(|t + h - t|)$
+- $\text{var}(x_t) < \infty$
+
+We know by definition that the mean is constant and thus the first condition is *true*.
+
+We also know that $\text{corr}(y_t, y_{t+h})$ is free of $t$, so
+
+$$\text{corr}(y_t, y_{t+h}) = \frac{\text{cov}(y_t, y_{t+h})}{\sigma_{y_t} \sigma_{y_t + h}}$$
+
+is free of $t$ as well. Therefore we know that $\text{cov}(y_t, y_{t+h}) = \gamma(y_t, y_{t+h}) = \gamma(h)$ as it will only depend on the lag $h$. So also the second condition is *true*.
+
+As we don't have more information about the process, we could define a process that violates the last condition, which means that $\text{var}(y_t) = \infty$.
+
+Therefore the answer is: **Yes**, it is possible to define a time series as requested in the question.
 
 # Assignment 18
 
@@ -186,7 +236,7 @@ setting $p_\theta(z) = 0$
 
 $$0 = 1 - \frac{8}{9}z$$
 
-So $z_{\theta1 = \frac{8}{9}}$
+So $z_{\theta1 = \frac{9}{8}}$
 
 ### Finding p and q
 
@@ -198,7 +248,7 @@ Therefore p and q are simply given by the highest order terms, so the model is $
 
 **Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
 
-**Invertibility:** As $\forall Z_\phi: |Z_\phi| > 1$ is **not** given, the model is not invertible.
+**Invertibility:** As $\forall Z_\phi: |Z_\phi| > 1$ is given, the model is invertible. $|Z_\phi| = \frac{9}{8} = 1.125$.
 
 ## e) **Solution**
 
@@ -208,7 +258,7 @@ Applying the autoregressive operator for $\phi$ and $\theta$ gives us:
 
 AR: $\phi(B) = 1 - 4B^2$, thus $Z_{\phi} = (1, 0, -4)$
 
-MA: $\theta(B) = 1 - B + \frac{1}{2}B^2$, thus $Z_{\theta} = (1, -1, -\frac{1}{2})$
+MA: $\theta(B) = 1 - B + \frac{1}{2}B^2$, thus $Z_{\theta} = (1, -1, \frac{1}{2})$
 
 For both parts we calculate the zero points. We start with AR.
 
