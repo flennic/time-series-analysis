@@ -1,5 +1,5 @@
 ---
-title: "Time Series (732A62) Lab1"
+title: "Time Series (732A62) Lab1 Group 7"
 author: "Anubhav Dikshit(anudi287) and Maximilian Pfundstein(maxpf364)"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -308,16 +308,16 @@ c) To eliminate trend, compute the first difference of the transformed data, plo
 ```{r}
 set.seed(12345)
 
-autoplot(ts(diff(data_oil, differences = 1), start = 2000, frequency = 52)) + 
+autoplot(ts(diff(log(data_oil), differences = 1), start = 2000, frequency = 52)) + 
            ylab("Price of Oil") +xlab("Year") + 
            ggtitle("Price of Oil with Diff 1 vs. Years")
 
-autoplot(ts(diff(data_gas, differences = 1), start = 2000, frequency = 52)) + 
+autoplot(ts(diff(log(data_gas), differences = 1), start = 2000, frequency = 52)) + 
            ylab("Price of Gas") +xlab("Year") + 
            ggtitle("Price of Gas with Diff 1 vs. Years")
 
-ggAcf(diff(data_oil, differences = 1), data_oil)
-ggAcf(diff(data_gas, differences = 1), data_gas)
+ggAcf(diff(log(data_oil), differences = 1), data_oil)
+ggAcf(diff(log(data_gas), differences = 1), data_gas)
 
 ```
 
@@ -330,8 +330,8 @@ d) Exhibit scatter plots of $x_t$ and $y_t$ for up to three weeks of lead time o
 ```{r}
 set.seed(12345)
 
-oil_price_one_diff <- diff(data_oil, differences = 1) 
-gas_price_one_diff <- diff(data_gas, differences = 1) 
+oil_price_one_diff <- diff(log(data_oil), differences = 1) 
+gas_price_one_diff <- diff(log(data_gas), differences = 1) 
 
 df <- data.frame(oil_price_one_diff=as.matrix(oil_price_one_diff), 
            gas_price_one_diff = as.matrix(gas_price_one_diff), 
