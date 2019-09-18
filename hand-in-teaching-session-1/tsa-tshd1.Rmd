@@ -5,15 +5,15 @@ date: "`r Sys.Date()`"
 header-includes:
    - \usepackage{xcolor}
 output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
   html_document:
     df_print: paged
     toc: true
     toc_float: false
     number_sections: false
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -28,7 +28,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **b)** Show that the autocorrelation function for the ${y_t}$ process depends only on the time lag. Is the ${y_t}$ process stationary?
 
-**c)** Is it possible to have a time series with a constant mean and with $\text{corr}(y_t, y_{t+h})$ free of $t$ but with ${y_t}$ *not* stationary?
+<!-- **c)** Is it possible to have a time series with a constant mean and with $\text{corr}(y_t, y_{t+h})$ free of $t$ but with ${y_t}$ *not* stationary? -->
 
 ## Mean and Covariance Function
 
@@ -179,7 +179,7 @@ Taking the square root
 
 $$z-\frac{1}{8}2 = \pm \frac{3}{8}$$
 
-Thus is follows that $z_{\theta1 = \frac{1}{2}}$ and $z_{\theta2 = - \frac{1}{4}}$.
+Thus it follows that $z_{\theta1 = \frac{1}{2}}$ and $z_{\theta2 = - \frac{1}{4}}$.
 
 ### Finding p and q
 
@@ -189,9 +189,9 @@ Therefore p and q are simply given by the highest order terms, so the model is $
 
 ### Causality and Invertibility
 
-**Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
+**Invertibility:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
 
-**Invertibility:** As $\forall Z_\phi: |Z_\phi| > 1$ is **not** given, the model is not invertible.
+**Causality:** As $\forall Z_\phi: |Z_\phi| > 1$ is **not** given, the model is not invertible.
 
 
 ## d) **Solution**
@@ -242,13 +242,13 @@ So $z_{\theta1 = \frac{9}{8}}$
 
 To check for redundancy, we have to identify any common roots. As $z_\phi \cap z_\theta = \{\}$, $\phi(B)$ and $\theta(B)$ share no common roots and no redundancy is given.
 
-Therefore p and q are simply given by the highest order terms, so the model is $\text{ARMA}(p = 1, q = 2)$.
+Therefore p and q are simply given by the highest order terms, so the model is $\text{ARMA}(p = 2, q = 1)$.
 
 ### Causality and Invertibility
 
-**Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
+**Invertibility:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
 
-**Invertibility:** As $\forall Z_\phi: |Z_\phi| > 1$ is given, the model is invertible. $|Z_\phi| = \frac{9}{8} = 1.125$.
+**Causality:** As $\forall Z_\phi: |Z_\phi| > 1$ is given, the model is invertible. $|Z_\phi| = \frac{9}{8} = 1.125$.
 
 ## e) **Solution**
 
@@ -296,7 +296,7 @@ Taking the square root
 
 $$z - 1 = \pm i$$
 
-Thus is follows that $z_{\theta1} = 1 + 1i$ and $z_{\theta2} = 1 - 1i$.
+Thus it follows that $z_{\theta1} = 1 + i$ and $z_{\theta2} = 1 - i$.
 
 ### Finding p and q
 
@@ -306,9 +306,9 @@ Therefore p and q are simply given by the highest order terms, so the model is $
 
 ### Causality and Invertibility
 
-**Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
+**Invertibility:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
 
-**Invertibility:** As $\forall Z_\phi: |Z_\phi| > 1$ is given, the model is invertible. The length of all elements of the set $Z_\phi$ is given by $|Z_\phi| = \sqrt{1^2 + (\pm 1)^2} \approx 1.414214$.
+**Causality:** As $\forall Z_\phi: |Z_\phi| > 1$ is given, the model is invertible. The length of all elements of the set $Z_\phi$ is given by $|Z_\phi| = \sqrt{1^2 + (\pm 1)^2} \approx 1.414214$.
 
 ## f) **Solution**
 
@@ -358,6 +358,6 @@ Therefore p and q are simply given by the highest order terms, so the model is $
 
 ### Causality and Invertibility
 
-**Causality:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
+**Invertibility:** As $\forall Z_\theta: |Z_\theta| > 1$ is **not** given, the model is not causal.
 
-**Invertibility:** As the model does not have an MA part, it does not make sense to talk about invertibility as an $\text{MA}(\infty)$ representation cannot exist for something that is non-existent. Also a (weak) stationary property does not make sense in this case.
+**Causality:** As the model does not have an MA part, it does not make sense to talk about invertibility as an $\text{MA}(\infty)$ representation cannot exist for something that is non-existent. Also a (weak) stationary property does not make sense in this case.
