@@ -15,6 +15,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(dplyr)
 knitr::opts_chunk$set(echo = TRUE)
 set.seed(12345)
 ```
@@ -24,6 +25,77 @@ set.seed(12345)
 ## Linear Regressions on Necessarily Lagged Variables and Appropriate Correlation
 
 **Task:** Generate $1000$ observations from AR(3) process with $\phi_1 = 0.8, \phi_2 = -0.2, \phi_3 = 0.1$. Use these data and the definition of PACF to compute $\phi_{33}$ from the sample, i.e. write your own code that performs linear regressions on necessarily lagged variables and then computes an appropriate correlation. Compare the result with the output of function `pacf()` and with the theoretical value of $\phi_{33}$.
+
+**Answer:** First the sampling and looking at the built-in PACF.
+
+```{r}
+
+model = list(ar = c(0.8, -0.2, 0.1), ma = c())
+set.seed(12345)
+series = arima.sim(model = model, n = 1000)
+pacf(series)
+print(pacf(series))
+
+```
+
+Now we do it on our own.
+
+```{r}
+
+pacf_ar = function(series, lag.max = 30) {
+  
+  covariances = vector(length=lag.max)
+  series = as.vector(series)
+  
+  for (lag in 1:lag.max) {
+    
+    # Create a dataframe with the lagged variables and omit NAs
+    df = data.frame(y = series)
+    df_colnames = c("y")
+    
+    if (lag == 1) {
+      df = na.omit(cbind(df, lag(series, t)))
+      covariances[1] = cor(df[,1], df[,2])
+      next
+    }
+    
+    for (t in 1:(lag-1)) {
+      df_colnames = c(df_colnames, paste("t_", t, sep=""))
+      df = cbind(df, lag(series, t))
+    }
+    
+    #df = na.omit(df)
+    df = df[(1+lag):nrow(df),]
+    colnames(df) = df_colnames
+    
+    # Second df
+    df2 = data.frame(y = series)
+    df2_colnames = c("y")
+    
+    for (t in 1:(lag-1)) {
+      df2_colnames = c(df2_colnames, paste("t+", t, sep=""))
+      df2 = cbind(df2, lead(series, t))
+    }
+    
+    #df2 = na.omit(df2)
+    df2 = df2[1:(nrow(df2)-lag),]
+    colnames(df2) = df2_colnames
+    
+    # Performing LinReg
+    x_t_dash  = lm(y ~ ., df)$residual
+    x_t_dash_dash  = lm(y ~ ., df2)$residual
+    
+    covariances[lag] = cor(x_t_dash, x_t_dash_dash)
+  }
+  return(covariances)
+}
+
+pacf_ar(series, 3)
+print(pacf(series, lag.max = 3))
+ARMAacf(model$ar, lag.max = 3, pacf = TRUE)
+
+```
+
 
 ## Methods of Moments, Conditional Least Squares and Maximum Likelihood
 

@@ -1,1 +1,0 @@
-Hi, in assignment 12, i think you have swapped p and q for solution d), maybe somwhere else also you have swapped theta and phi test for causality and invertibility.
