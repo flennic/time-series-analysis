@@ -18,6 +18,7 @@ output:
 library(dplyr)
 library(ggplot2)
 library(kernlab)
+library(astsa)
 knitr::opts_chunk$set(echo = TRUE)
 set.seed(12345)
 ```
@@ -103,6 +104,54 @@ ARMAacf(model$ar, lag.max = 3, pacf = TRUE)
 
 **Task:** Simulate an AR(2) series with $\phi_1 = 0.8, \phi_2 = 0.1$ and $n=100$. Compute the estimated parameters and their standand errors by using three methods: method of moments (Yule-Walker equations), conditional least squares and maximum likelihood (ML) and compare their results to the true values. Which method does seem to give the best result? Does theoretical value for $\phi_2$ fall within confidence interval for ML estimate?
 
+**Answer:** Lets first simulate the time series and then fit the different models.
+
+```{r, warning=FALSE}
+
+model = list(ar = c(0.8, 0.1), ma = c())
+set.seed(12345)
+series = arima.sim(model = model, n = 100)
+
+MOM_Model = ar(series, order = 2, method = "yule-walker", aic = FALSE)
+CLS_Model = ar(series, order = 2, method = "ols", aic = FALSE)
+ML_Model = ar(series, order = 2, method = "mle", aic = FALSE)
+
+
+df = data.frame(MOM_Model$ar, CLS_Model$ar, ML_Model$ar)
+
+df
+
+```
+
+It seems like the Methods of Moments works best in this case. Now lets look at the confidence interval.
+
+As the function `ar()` does not seem to return the variance for the coefficients, we have to use the `arima()` function for that.
+
+```{r, warning=FALSE}
+
+ML_Model_CI = arima(series, order = c(2,0,0), method = "ML")
+
+sigma = ML_Model_CI$var.coef[2, 2]
+phi_2 = ML_Model_CI$coef[2]
+CI = c(phi_2 - 1.96 * sigma, phi_2 + 1.96 * sigma)
+
+CI
+
+```
+
+```{r, echo = FALSE}
+
+is_within_ci = function() {
+    if (df$ML_Model.ar[2] > CI[1] && df$ML_Model.ar[2] < CI[2]) {
+    return("The phi_2 estimate lies within the confidence interval.")
+  }
+  return("The phi_2 estimate does not lie within the confidence interval.")
+}
+
+```
+
+The $\phi_2$ estimate is `r df$ML_Model.ar[2]`, the CI is given by `r CI[1]` for the lower boundary and `r CI[2]` for the upper boundary. `r is_within_ci()`
+
 ## Sample and Theoretical ACF and PACF
 
 **Task:** Generate $200$ observations of a seasonal $\text{ARIMA}(0,0,1) \times (0,0,1)_{12}$ model with coefficients $\Theta = 0.6$ and $\theta = 0.3$ by using `arima.sim()`. Plot sample ACF and PACF and also theoretical ACF and PACF. Which patterns can you see at the theoretical ACF and PACF? Are they repeated at the sample ACF and PACF?
@@ -123,11 +172,7 @@ print(pacf(series))
 ARMAacf(model$ma, lag.max = 3, pacf = TRUE)
 ARMAacf(model$ma, lag.max = 3, pacf = FALSE)
 
-#acf(series)
-#pacf(series)
-
 ```
-
 
 ## Forecast and Predition
 
@@ -142,7 +187,6 @@ fitted_model = arima(series,
 prediction = predict(fitted_model, n.ahead = 30)
 
 ```
-
 
 
 ```{r}
@@ -181,7 +225,6 @@ ggplot() +
 
 ```
 
-
 ## Prediction Band
 
 **Task:** Generate $50$ observations from ARMA(1, 1) process with $\phi = 0.7$, $\theta = 0.50$. Use first $40$ values to fit an ARMA(1,1) model with $\mu = 0$. Plot the data, the $95\%$ prediction band and plot also the true $10$ values that you initially dropped. How many of them are outside the prediction band? How can this be interpreted?
@@ -193,6 +236,10 @@ set.seed(12345)
 series = arima.sim(model, n=50)
 fitted_model = arima(series[1:40], order = c(1, 0, 1), include.mean = FALSE)
 prediction = predict(fitted_model, n.ahead = 10)
+
+```
+
+```{r, echo=FALSE}
 
 df = data.frame(time = c(1:length(series)),
                 data = series)
@@ -222,9 +269,45 @@ ggplot() +
 
 **Task:** For data series `chicken` in package `astsa` (denote it by `x_t`) plot $4$ following graphs up to $40$ lags: ACF($x_t$), PACF($x_t$), ACF($\nabla x_t$), PACF($\nabla x_t$) (group them in one graph). Which ARIMA(p, d, q) or $\text{ARIMA}(p,d,q) \times (P,D,Q)_{s}$ models can be suggested based on this information only? Motivate your choice.
 
+```{r}
+
+plot_diagnostics = function(series, max.lag = 40) {
+  par(mfrow = c(2, 2))
+  acf(series, lag.max = max.lag)
+  pacf(series, lag.max = max.lag)
+  acf(diff(series), lag.max = max.lag)
+  pacf(diff(series), lag.max = max.lag)
+}
+
+```
+
+**Answer:** Looking at the ACF plot we see a decreasing correlation over time. As the correlation is continuingly following a downwards trend, while all of the lags keep being statistically significant, we should have a closer look at the first difference. He we see a spike at lag 1, as well as an indicator for the seasionality with a lag of 12. The second lag is significant, but the typical AR ACF plot indicates an decay, so we choose 1 for the AR part. Looking at the PACF plots we can observe the seasionality again, also we see a significant spike at lag 1. Therefore we choose the following model: $\text{ARIMA}(1, 1, 1)\times(0, 0, 1)_{12}$.
+
+```{r}
+
+plot_diagnostics(astsa::chicken)
+
+```
+
 ## More Datasets
 
 **Task:** Repeat step 1 for the following datasets: `so2`, `EQcount`, `HCT` in package `astsa`.
+
+**Answer:** Let's look at different plots first and then do some interpretation.
+
+**so2:** We see again that is makes sense to take the first difference for the ACF plot, as all spikes seem to be significant. The remaining two spikes, which are contrary in direction, indicate an MA process, which can also be seen by the PACF with the first difference. It does not seem that there is a seasionality, so the chosen model is $\text{ARIMA}(0, 1, 1)$ or $\text{ARIMA}(0, 1, 2)$.
+
+**EQcount:** We can see the typical behaviour of an AR process in the ACF plot, which is quickly decaying and we have no further increase in spikes. So we assume an underlying AR process. As we observe no seasionality, nor a major change in the differnce plots, we chose the model $\text{AR}(1)$.
+
+**HCT:** The ACF plot of the first difference shows a slowly decaying difference, while having recurring spikes. As the spikes are separated by 7 lags, we assume a weekly seasionality. The PACF shows significance at lag 3, as well as a significane for lag 2 at the first difference. Therefore we suggest the model $\text{ARIMA}(7, 1, 1)\times(0,0,1)_7$.
+
+```{r}
+
+plot_diagnostics(astsa::so2)
+plot_diagnostics(astsa::EQcount)
+plot_diagnostics(astsa::HCT)
+
+```
 
 
 # Assignment 3: ARIMA modeling cycle
