@@ -3,19 +3,21 @@ title: "Time Series Analysis - Lab 02 (Group 7)"
 author: "Anubhav Dikshit (anudi287) and Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   html_document:
     df_print: paged
     toc: true
     toc_float: false
     number_sections: false
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
 library(dplyr)
+library(ggplot2)
+library(kernlab)
 knitr::opts_chunk$set(echo = TRUE)
 set.seed(12345)
 ```
@@ -42,7 +44,7 @@ Now we do it on our own.
 
 ```{r}
 
-pacf_ar = function(series, lag.max = 30) {
+pacf_ar = function(series., lag.max = 30) {
   
   covariances = vector(length=lag.max)
   series = as.vector(series)
@@ -54,7 +56,7 @@ pacf_ar = function(series, lag.max = 30) {
     df_colnames = c("y")
     
     if (lag == 1) {
-      df = na.omit(cbind(df, lag(series, t)))
+      df = na.omit(cbind(df, lag(series, lag)))
       covariances[1] = cor(df[,1], df[,2])
       next
     }
@@ -105,13 +107,113 @@ ARMAacf(model$ar, lag.max = 3, pacf = TRUE)
 
 **Task:** Generate $200$ observations of a seasonal $\text{ARIMA}(0,0,1) \times (0,0,1)_{12}$ model with coefficients $\Theta = 0.6$ and $\theta = 0.3$ by using `arima.sim()`. Plot sample ACF and PACF and also theoretical ACF and PACF. Which patterns can you see at the theoretical ACF and PACF? Are they repeated at the sample ACF and PACF?
 
+**Answer:** TODO. Plotting of theoretical values and comparison.
+
+```{r}
+
+theta = 0.3
+Theta = 0.6
+
+model = list(ma = c(theta, rep(0, 10), Theta, theta*Theta))
+
+series = arima.sim(model, n=200)
+
+print(acf(series))
+print(pacf(series))
+ARMAacf(model$ma, lag.max = 3, pacf = TRUE)
+ARMAacf(model$ma, lag.max = 3, pacf = FALSE)
+
+#acf(series)
+#pacf(series)
+
+```
+
+
 ## Forecast and Predition
 
 **Task:** Generate $200$ observations of a seasonal $\text{ARIMA}(0,0,1) \times (0,0,1)_{12}$ model with coefficients $\Theta = 0.6$ and $\theta = 0.3$ by using `arima.sim()`. Fit $\text{ARIMA}(0,0,1) \times (0,0,1)_{12}$ model to the data, compute forecasts and a prediction band $30$ points ahead and plot the original data and the forecast with the prediction band. Fit the same data with function `gausspr()` from package `kernlab` (use default settings). Plot the original data and predicted data from $t = 1$ to $t = 230$. Compare the two plots and make conclusions.
 
+```{r}
+
+fitted_model = arima(series,
+                     order = c(0, 0, 1),
+                     seasonal = list(order= c(0, 0, 1), period = 12))
+
+prediction = predict(fitted_model, n.ahead = 30)
+
+```
+
+
+
+```{r}
+
+fitted_model_gausspr = gausspr(c(1:200), series)
+prediction_gausspr = predict(fitted_model_gausspr, c(1:230))
+
+```
+
+```{r, echo=FALSE}
+
+df = data.frame(time = c(1:length(series)),
+                data = series)
+
+df2 = data.frame(time = c((length(series)+1):
+                            (length(prediction$pred)+length(series))),
+                 forecast = prediction$pred,
+                 upper_boundary = prediction$pred + 1.96*prediction$se,
+                 lower_boundary = prediction$pred - 1.96*prediction$se)
+
+df3 = data.frame(time = c(1:230),
+                 gaussian = prediction_gausspr)
+
+ggplot() +
+  geom_ribbon(aes(x = df2$time,
+                  ymin=df2$lower_boundary,
+                  ymax=df2$upper_boundary),
+                  fill = "#0000ff", alpha = 0.15) + 
+  geom_line(aes(x = df$time, y = df$data, colour = "Original Series")) +
+  geom_line(aes(x = df2$time, y = df2$forecast, colour = "Forecasted Series")) +
+  geom_line(aes(x = df3$time, y = df3$gaussian, colour = "Forecasted Gaussian Series")) +
+  labs(title = "LRandom Time Series", y = "Values", x = "Time", color = "Legend") +
+  scale_color_manual(values = c("#FF5733", "#900C3F", "#444444")) +
+  theme_minimal()
+
+
+```
+
+
 ## Prediction Band
 
 **Task:** Generate $50$ observations from ARMA(1, 1) process with $\phi = 0.7$, $\theta = 0.50$. Use first $40$ values to fit an ARMA(1,1) model with $\mu = 0$. Plot the data, the $95\%$ prediction band and plot also the true $10$ values that you initially dropped. How many of them are outside the prediction band? How can this be interpreted?
+
+```{r}
+
+model = list(ma = c(0.7), ar = c(0.5))
+set.seed(12345)
+series = arima.sim(model, n=50)
+fitted_model = arima(series[1:40], order = c(1, 0, 1), include.mean = FALSE)
+prediction = predict(fitted_model, n.ahead = 10)
+
+df = data.frame(time = c(1:length(series)),
+                data = series)
+
+df2 = data.frame(time = c(41:50),
+                 forecast = prediction$pred,
+                 upper_boundary = prediction$pred + 1.96*prediction$se,
+                 lower_boundary = prediction$pred - 1.96*prediction$se)
+
+ggplot() +
+  geom_ribbon(aes(x = df2$time,
+                  ymin=df2$lower_boundary,
+                  ymax=df2$upper_boundary),
+                  fill = "#0000ff", alpha = 0.15) + 
+  geom_line(aes(x = df$time, y = df$data, colour = "Original Series")) +
+  geom_line(aes(x = df2$time, y = df2$forecast, colour = "Forecasted Series")) +
+  labs(title = "LRandom Time Series", y = "Values", x = "Time", color = "Legend") +
+  scale_color_manual(values = c("#FF5733", "#900C3F")) +
+  theme_minimal()
+
+```
 
 
 # Assignment 2: ACF and PACF diagnostics
