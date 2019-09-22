@@ -1,0 +1,195 @@
+---
+title: "Time Series Analysis - Lab 02 (Group 7)"
+author: "Anubhav Dikshit (anudi287) and Maximilian Pfundstein (maxpf364)"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(12345)
+options(scipen = 999)
+options(tinytex.verbose = TRUE)
+
+library("tidyverse") #ggplot and dplyr 
+library("gridExtra") # combine plots
+library("knitr") # for pdf
+library("fpp2") #timeseries with autoplot and stuff
+library("reshape2") #reshape the data
+library("forecast") #dataset oil and gas is present here
+
+# The palette with black:
+cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+# Assignment 1: Computations with simulated data
+
+## Linear Regressions on Necessarily Lagged Variables and Appropriate Correlation
+
+**Task:** Generate $1000$ observations from AR(3) process with $\phi_1 = 0.8, \phi_2 = -0.2, \phi_3 = 0.1$. Use these data and the definition of PACF to compute $\phi_{33}$ from the sample, i.e. write your own code that performs linear regressions on necessarily lagged variables and then computes an appropriate correlation. Compare the result with the output of function `pacf()` and with the theoretical value of $\phi_{33}$.
+
+
+$\phi_{33} = corr(X_{t-3}-f_p,X_t-f_p)$ where $f_p=\sum_{j=1}^p \phi_j X_{\tau-j}$
+
+
+```{r}
+
+set.seed(12345)
+x_t <- arima.sim(model = list(ar = c(0.8,-0.2,0.1)), n=1000)
+actual_pacf_value <- pacf(x_t, plot = FALSE)$acf[3]
+df <- data.frame(x_t = as.vector(x_t))
+df$x_t_lag_1 <- lag(df$x_t,1)
+df$x_t_lag_2 <- lag(df$x_t,2)
+df$x_t_lag_3 <- lag(df$x_t,3)
+df <- na.omit(df)
+
+# building models and getting their residuals
+model_1_res <- lm(x_t ~ x_t_lag_1 + x_t_lag_2, data = df)$residuals
+model_2_res <- lm(x_t_lag_3 ~ x_t_lag_1 + x_t_lag_2, data = df)$residuals
+
+# theortical pacf values
+theotical_pacf_value <- cor(x = model_1_res, y = model_2_res, use = "na.or.complete")
+
+cat("The theoretical and actual value of PACF are: ", theotical_pacf_value, actual_pacf_value)
+
+
+
+```
+
+Analysis: The theoretical and the actual values of PACF are very similar.
+
+## Methods of Moments, Conditional Least Squares and Maximum Likelihood
+
+**Task:** Simulate an AR(2) series with $\phi_1 = 0.8, \phi_2 = 0.1$ and $n=100$. Compute the estimated parameters and their standard errors by using three methods: method of moments (Yule-Walker equations), conditional least squares and maximum likelihood (ML) and compare their results to the true values. Which method does seem to give the best result? Does theoretical value for $\phi_2$ fall within confidence interval for ML estimate?
+
+
+```{r, warning=FALSE}
+set.seed(12345)
+x_t <- arima.sim(model = list(ar = c(0.8,0.1)), n=100)
+
+method_yule_walker <- ar(x_t, order = 2, method = "yule-walker", aic = FALSE)$ar
+method_cls <- ar(x_t, order = 2, method = "ols", aic = FALSE)$ar
+method_mle <- ar(x_t, order = 2, method = "mle", aic = FALSE)$ar
+
+df <- data.frame(rbind(method_yule_walker, method_cls,method_mle))
+
+kable(df, caption = "Comparison of parameters using different methods")
+
+
+```
+
+Analysis: The parameter values from yule walker method is the closet to the actual value of 0.8,0.1. Yes the theoretical value of $\phi_2$ did fall within confidence interval using MLE method.
+
+
+## Sample and Theoretical ACF and PACF
+
+**Task:** Generate $200$ observations of a seasonal $\text{ARIMA}(0,0,1) \times (0,0,1)_{12}$ model with coefficients $\Theta = 0.6$ and $\theta = 0.3$ by using `arima.sim()`. Plot sample ACF and PACF and also theoretical ACF and PACF. Which patterns can you see at the theoretical ACF and PACF? Are they repeated at the sample ACF and PACF?
+
+
+Now $ARIMA(1,1,1)(1,1,1)_4$ can be written as $(1-\phi_1B)(1-B)(1-B^4)(1-\Phi_1 B^4)x_t = w_t (1+\theta B)(1+\Theta B^4)$ Similarly $ARIMA(0,0,1)(0,0,1)_{12}$ can be written as $x_t=w_t(1+\Theta B^{12})(1+\theta B)$ which can be simplified as $x_t = w_t(1+\Theta B^{12}+ \theta B + \Theta \theta B^{13})$ given that $\theta=0.3$ and $\Theta =0.6$ we get $x_t =w_t(1+0.3B+0.6B^{12}+0.18B^{13})$
+
+```{r}
+set.seed(12345)
+x_t <- arima.sim(model = list(ma = c(0.3,rep(0,10),0.6,0.18)), n=200)
+
+
+df <- data.frame(sample_acf = acf(x_t, plot = FALSE, lag.max = 13)$acf,
+                 sample_pacf = pacf(x_t, plot = FALSE, lag.max = 14)$acf,
+                 theortical_acf = ARMAacf(ma = c(0.3,rep(0,10),0.6,0.18), pacf = FALSE, lag.max = 13),
+                 theortical_pacf = ARMAacf(ma = c(0.3,rep(0,10),0.6,0.18), pacf = TRUE, lag.max = 14))
+
+df$index <- rownames(df)
+
+plot1 <- ggplot(data=df, aes(x=index)) + 
+  geom_col(aes(y=sample_acf)) + 
+  ggtitle("Sample ACF")
+
+plot2 <- ggplot(data=df, aes(x=index)) + 
+  geom_col(aes(y=theortical_acf)) + 
+  ggtitle("Theoretical ACF")
+
+grid.arrange(plot1, plot2, ncol = 1)
+
+plot3 <- ggplot(data=df, aes(x=index)) + 
+  geom_col(aes(y=sample_pacf)) + 
+  ggtitle("Sample PACF")
+
+plot4 <- ggplot(data=df, aes(x=index)) + 
+  geom_col(aes(y=theortical_pacf)) + 
+  ggtitle("Theoretical PACF")
+
+grid.arrange(plot3, plot4, ncol = 1)
+
+```
+
+## Forecast and Prediction
+
+**Task:** Generate $200$ observations of a seasonal $\text{ARIMA}(0,0,1) \times (0,0,1)_{12}$ model with coefficients $\Theta = 0.6$ and $\theta = 0.3$ by using `arima.sim()`. Fit $\text{ARIMA}(0,0,1) \times (0,0,1)_{12}$ model to the data, compute forecasts and a prediction band $30$ points ahead and plot the original data and the forecast with the prediction band. Fit the same data with function `gausspr()` from package `kernlab` (use default settings). Plot the original data and predicted data from $t = 1$ to $t = 230$. Compare the two plots and make conclusions.
+
+
+```{r}
+
+```
+
+## Prediction Band
+
+**Task:** Generate $50$ observations from ARMA(1, 1) process with $\phi = 0.7$, $\theta = 0.50$. Use first $40$ values to fit an ARMA(1,1) model with $\mu = 0$. Plot the data, the $95\%$ prediction band and plot also the true $10$ values that you initially dropped. How many of them are outside the prediction band? How can this be interpreted?
+
+
+```{r}
+
+```
+
+# Assignment 2: ACF and PACF diagnostics
+
+## ARIMA Model Suggestion
+
+**Task:** For data series `chicken` in package `astsa` (denote it by `x_t`) plot $4$ following graphs up to $40$ lags: ACF($x_t$), PACF($x_t$), ACF($\nabla x_t$), PACF($\nabla x_t$) (group them in one graph). Which ARIMA(p, d, q) or $\text{ARIMA}(p,d,q) \times (P,D,Q)_{s}$ models can be suggested based on this information only? Motivate your choice.
+
+
+```{r}
+
+```
+
+## More Data sets
+
+**Task:** Repeat step 1 for the following data sets: `so2`, `EQcount`, `HCT` in package `astsa`.
+
+
+```{r}
+
+```
+
+
+# Assignment 3: ARIMA modeling cycle
+
+In this assignment, you are assumed to apply a complete ARIMA modeling cycle starting from visualization and detrending and ending up with a forecasting.
+
+## Finding a Suitable ARIMA Model (oil)
+
+**Task:** Find a suitable ARIMA(p, d, q) model for the data set `oil` present in the library `astsa`. Your modeling should include the following steps in an appropriate order: visualization, unit root test, detrending by differencing (if necessary), transformations (if necessary), ACF and PACF plots when needed, EACF analysis, Q-Q plots, Box-Ljung test, ARIMA fit analysis, control of the parameter redundancy in the fitted model. When performing these steps, always have 2 tentative models at hand and select one of them in the end. Validate your choice by AIC and BIC and write down the equation of the selected model. Finally, perform forecasting of the model $20$ observations ahead and provide a suitable plot showing the forecast and its uncertainty.
+
+
+```{r}
+
+```
+
+## Finding a Suitable ARIMA Model (unemp)
+
+**Task:** Find a suitable $\text{ARIMA}(p,d,q) \times (P,D,Q)_{s}$ model for the data set unemp present in the library `astsa`. Your modeling should include the following steps in an appropriate order: visualization, detrending by differencing (if necessary), transformations (if necessary), ACF and PACF plots when needed, EACF analysis, Q-Q plots, Box-Ljung test, ARIMA fit analysis, control of the parameter redundancy in the fitted model. When performing these steps, always have 2 tentative models at hand and select one of them in the end. Validate your choice by AIC and BIC and write down the equation of the selected model (write in the back-shift operator notation without expanding the brackets). Finally, perform forecasting of the model $20$ observations ahead and provide a suitable plot showing the forecast and its uncertainty.
+
+
+```{r}
+
+```
+
+# Source Code
+
+```{r, ref.label=knitr::all_labels(), echo = TRUE, eval = FALSE, results = 'show'}
+
+```
