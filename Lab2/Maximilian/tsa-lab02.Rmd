@@ -430,14 +430,7 @@ According to the AIC and BIC score, both models seem to be nearly equally good. 
 
 Therefore the model is given by: $\Delta x_t=w_t+0.1688w_{t-1}-0.0900w_{t-2}+0.1447w_{t-3}$
 
-Finally, lets check for redundancy:
-
-```{r}
-
-
-```
-
-So it looks like we don't have any redundancy.
+Finally, lets check for redundancy: As we only have a AR terms, there can be no parameter redundancy.
 
 The forecast looks like this.
 
@@ -517,10 +510,15 @@ Finally, lets check for redundancy:
 
 ```{r}
 
+ar_terms = c(-0.0198, -0.9829)
+ma_terms = c(0.0757, 1, rep(0, 9), 0.4898)
+
+polyroot(ar_terms)
+polyroot(ma_terms)
 
 ```
 
-So it looks like we don't have any redundancy.
+So it looks like we don't have any redundancy, as we only have one term for the AR part which seems far away enough to not influence the other terms.
 
 ```{r}
 
