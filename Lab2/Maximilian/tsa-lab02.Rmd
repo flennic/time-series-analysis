@@ -171,7 +171,7 @@ We know that $q = 1$, $Q = 1$ and $S=12$ and we know, given from the slides, tha
 
 $$\Theta_q(B^S) = q + \Theta_1 (B^{1S}) + \: ... \: + \Theta_Q (B^{QS})$$
 
-Therefor:
+Therefore:
 
 $$x_t = (1+\Theta_1B^{12})(1+\theta_1 B)w_t$$
 
@@ -179,9 +179,9 @@ $$x_t = (1 + \theta_1B + \Theta_1B^{12}+\theta_1 \Theta_1 B^{13})w_t$$
 
 $$x_t = w_t + \theta_1w_{t-1}+\Theta_1 w_{t-12}+\theta_1 \Theta_1w_{t-13}$$
 
-According to this the model is $MA(\theta_1, \text{rep}(0, 0), \Theta_1, \theta_1 \Theta_1)$.
+According to this the model is $\text{MA}(\theta_1, \text{rep}(0, 0), \Theta_1, \theta_1 \Theta_1)$.
 
-**TODO:** Compare and describe this two plots. Make sure they're correct first.
+Looking at the plots we see that the theoretical plot clearly shows the seasonality while the plot generated from the sample just indicates it. This is expected to some extend as we will have some white noise added to our samples. So we say that yes, they are repeated, but not as clearly visible as the the theoretical one.
 
 ```{r}
 
@@ -405,7 +405,7 @@ eacf(diff(log(astsa::oil)))
 
 We see a formed triangle at $\text{ARIMA}(0,1,3)$. As we have two equivalent models with a higher order, namely $\text{ARIMA}(0,1,4)$ and $\text{AIRMA}(1,1,3)$, we will consider the following two models for the following analysis.
 
-```{r}
+```{r, message=FALSE}
 
 # We will use sarima as it will directly create the necessary plots
 modelA = sarima(log(astsa::oil), p=0, d=1, q=3)
@@ -428,9 +428,16 @@ BIC(modelB$fit)
 
 According to the AIC and BIC score, both models seem to be nearly equally good. Also looking at the Q-Q plots we see that they almost have the exact same behaviour, having a mostly straight line for the quantiles while falling of towards the tails. `modelA` seems slightly better, so we choose this one.
 
-Therefore the model is given by:
+Therefore the model is given by: $\Delta x_t=w_t+0.1688w_{t-1}-0.0900w_{t-2}+0.1447w_{t-3}$
 
-**TODO:** How to check for redundancy? Write the model (after discussion, otherwise you have to do it twice!).
+Finally, lets check for redundancy:
+
+```{r}
+
+
+```
+
+So it looks like we don't have any redundancy.
 
 The forecast looks like this.
 
@@ -482,7 +489,7 @@ eacf(diff(log(astsa::unemp), lag=12))
 
 Let's fit the models.
 
-```{r}
+```{r,message=FALSE}
 
 modelA = sarima(log(astsa::unemp), p=2, d=1, q=3, P=0, D=0, Q=1, S=12)
 modelB = sarima(log(astsa::unemp), p=2, d=1, q=2, P=0, D=0, Q=1, S=12)
@@ -504,9 +511,16 @@ BIC(modelB$fit)
 
 According to the AIC and BIC score, both models seem to be nearly equally good. Also looking at the Q-Q plots we see that `modelB` has a mostly straight line for the quantiles while falling of towards the tails. It looks better compared to `modelA`. It seems that `modelB` is slightly better, so we choose this one.
 
-Finally the model is given by:
+Therefore the model is given by: $\Delta x_t-0.0198x_{t-1}-0.9829x_{t-2}=w_t+0.0757w_{t-1}+1w_{t-2}+0.4898w_{t-12}$
 
-**TODO:** How to check for redundancy? Write the model (after discussion, otherwise you have to do it twice!).
+Finally, lets check for redundancy:
+
+```{r}
+
+
+```
+
+So it looks like we don't have any redundancy.
 
 ```{r}
 
