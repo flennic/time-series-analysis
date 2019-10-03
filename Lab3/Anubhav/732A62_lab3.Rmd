@@ -93,7 +93,7 @@ lines(ma(y, order=5, ), col=6)
 
 ```
 
-Analysis: We find that the moving average smoothing function with order 5 is the best fit but not overfitting.
+Analysis: We find that the moving average smoothing function with order 5 is the worst fit since its losing all the variability that is captured by our kalman filter.
 
 \fbox{\begin{minipage}{46.7em}
 c) Also, compare the filtering outcome when R in the filter is 10 times smaller than its actual value, while Q in the filter is 10 times larger than its actual value. How does the filtering outcome varies?
@@ -117,7 +117,7 @@ lines(ks$xf+2*sqrt(ks$Pf), lty=2, col=4)
 lines(ks$xf -2*sqrt(ks$Pf), lty=2, col=4)
 ```
 
-Analysis: We find that the filtering is resembles the true value much more than the previous values.
+Analysis: We find that the filtering output resembles the true value much more than the previousily run values.
 
 \fbox{\begin{minipage}{46.7em}
 d) Now compare the filtering outcome when R in the filter is 10 times larger than its actual value, while Q in the filter is 10 times smaller than its actual value. How does the filtering outcome varies?
@@ -140,7 +140,7 @@ lines(ks$xf+2*sqrt(ks$Pf), lty=2, col=4)
 lines(ks$xf -2*sqrt(ks$Pf), lty=2, col=4)
 ```
 
-Analysis: We find that the filtering if far off from resembles the true value and hardly moving in terms of the predicted values.
+Analysis: We find that the filtering output is far off the true value and hardly moving in terms of the predicted values, this is because kalman gain assumes that the uncertainity in measurement is high and it largely sticks with the mean of the series.
 
 \fbox{\begin{minipage}{46.7em}
 e) Implement your own Kalman filter and replace ksmooth0 function with your script.
