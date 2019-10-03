@@ -173,10 +173,10 @@ my_kalman <- function(Times, y, A, mu0, Sigma0, C, Q, R) {
   my_unweighted[t] <- A[t]%*%mu[t - 1]
     
   # Calculate the unweighted prediction of the covariate matrix
-  sigma_unweighted[t] <- A[t]%*%sigma[t - 1]%*%t(A[t]) + R[t]
+  sigma_unweighted[t] <- A[t]%*%sigma[t - 1]%*%t(A[t]) + Q[t]
     
   # Kalman gain Used to weight between our unweighted prediction and the obs
-  kalman_gain[t] <- sigma_unweighted[t]%*%t(C[t]) %*% solve(C[t]%*%sigma_unweighted[t]%*%t(C[t] + Q[t]))
+  kalman_gain[t] <- sigma_unweighted[t]%*%t(C[t]) %*% solve(C[t]%*%sigma_unweighted[t]%*%t(C[t] + R[t]))
   
   # Calculate the weighted mean, thus our prediction of the hidden state
   mu[t] <- my_unweighted[t] + kalman_gain[t]%*%(y[t] - C[t]%*%my_unweighted[t])
