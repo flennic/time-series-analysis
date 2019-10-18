@@ -177,7 +177,7 @@ $$(z-\frac{1}{8})^2 = \frac{9}{64}$$
 
 Taking the square root
 
-$$z-\frac{1}{8}2 = \pm \frac{3}{8}$$
+$$z-\frac{1}{8} = \pm \frac{3}{8}$$
 
 Thus it follows that $z_{\theta1 = \frac{1}{2}}$ and $z_{\theta2 = - \frac{1}{4}}$.
 

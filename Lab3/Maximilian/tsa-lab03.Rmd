@@ -181,7 +181,7 @@ mu[1]
 
 ```{r, echo=FALSE, eval=FALSE}
 
-### FROM SLIDES, DOESN'T WORK
+### Update First
 
 kalman_filter = function(num, data, A, C, Q, R, m0, P0) {
   
@@ -199,28 +199,32 @@ kalman_filter = function(num, data, A, C, Q, R, m0, P0) {
   
   # Init
   m = list()
+  mm = list()
   P = list()
+  PP = list()
   K = list()
   
   # Setup
   # Note that the formula with the inverse has been changed, as otherwise the
   # dimensions have to be determined first.
-  m[[1]] = m0
-  P[[1]] = P0
+  P = P0
+  m = m0
   
-  for (t in 2:(num)) {
+  for (t in 1:(num)) {
     # Observation Update Step
-    K[[t]] = P[[t-1]] %*% t(C[[t]]) %*% solve(C[[t]] %*% P[[t-1]] %*% t(C[[t]]) + R[[t]])
-    m[[t]] = m[[t-1]] + K[[t]] %*% (data[[t]] - C[[t]] %*% m[[t-1]])
-    P[[t]] = P[[t-1]] - K[[t]] %*% C[[t]] %*% P[[t-1]]
-    #P[[t]] = (diag(ncol(K[[t]])) - K[[t]] %*% C[[t]]) %*% P[[t-1]]
+    K[[t]] = P %*% t(C[[t]]) %*% solve(C[[t]] %*% P %*% t(C[[t]]) + R[[t]])
+    m[[t]] = m + K[[t]] %*% (data[[t]] - C[[t]] %*% m)
+    P[[t]] = P - K[[t]] %*% C[[t]] %*% P
+    
+    mm[[t]] = m[[t]]
+    PP[[t]] = P[[t]]
     
     # Prediction Step
-    m[[t+1]] = A[[t]] %*% m[[t]]
-    P[[t+1]] = A[[t]] %*% P[[t]] %*% t(A[[t]]) + Q[[t+1]]
+    m = A[[t]] %*% m[[t]]
+    P = A[[t]] %*% P[[t]] %*% t(A[[t]]) + Q[[t+1]]
   }
   
-  return(list(m = unlist(m), P=unlist(P), K=unlist(K)))
+  return(list(m = unlist(mm), P=unlist(PP), K=unlist(K)))
 }
 
 ```
@@ -228,7 +232,7 @@ kalman_filter = function(num, data, A, C, Q, R, m0, P0) {
 
 ```{r}
 
-### MODIFIED, DOES WORK
+### Prediction First (first entries are invalid)
 
 kalman_filter = function(num, data, A, C, Q, R, m0, P0) {
   
@@ -272,6 +276,10 @@ kalman_filter = function(num, data, A, C, Q, R, m0, P0) {
   return(list(m = unlist(m), P=unlist(P), K=unlist(K)))
 }
 
+```
+
+```{r}
+
 # generate dataset
 set.seed(1)
 num = 50
@@ -281,7 +289,7 @@ mu = cumsum(w) # state: mu[0], mu[1],..., mu[50]
 y = mu[-1] + v # obs: y[1],..., y[50]
 
 # filter  and  smooth (Ksmooth0 does both)
-ks = kalman_filter(num, y, A=1, m0=0, P0=1, C=1, Q=1, R=1)
+ks = kalman_filter(num, y, A=1, m0=0, P0=100, C=1, Q=1, R=1)
 # start figurepar(mfrow=c(3,1))
 Time = 1:num
 

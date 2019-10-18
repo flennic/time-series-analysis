@@ -3,15 +3,15 @@ title: "Time Series Analysis - Lab 01 (Group 7)"
 author: "Anubhav Dikshit (anudi287) and Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   html_document:
     df_print: paged
     toc: true
     toc_float: false
     number_sections: false
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -26,7 +26,7 @@ set.seed(12345)
 
 **Task a):** Generate two time series $x_t = -0.8x_{t-2} + w_t$, where $x_0 = x_1 = 0$ and $x_t = cos(\frac{2\pi t}{5})$ with 100 observations each. 
 
-**Answer:** First we create two functions to sample `n` times from our time series. Then we apply a filter. As default a convoltuion is being used (moving average). With `sides = 1` only past values are considered, which makes sense for a time series.
+**Answer:** First we create two functions to sample `n` times from our time series. Then we apply a filter. As default a convolution is being used (moving average). With `sides = 1` only past values are considered, which makes sense for a time series.
 
 ```{r}
 
@@ -75,7 +75,6 @@ series2_filtered = stats::filter(series2, filter = rep(0.2, 5), sides = 1)
 ```
 
 As we can see the time series have been smoothed a lot, removing extremes. The first smoothed series seems to be slightly shifted. For the second time series we obtain a straight line, as the moving average of an alternating series will be 0.
-
 
 ```{r, echo=FALSE, warning=FALSE}
 
@@ -144,7 +143,7 @@ So $Z_\phi$ is given by:
 
 $$Z_\phi = (1, -4, 2, 0, 0, 1)$$
 
-We use the function `polyroot()` to see if any of the (complex) zero points lies withon the unit circle.
+We use the function `polyroot()` to see if any of the (complex) zero points lies within the unit circle.
 
 ```{r}
 
@@ -392,11 +391,11 @@ detrended2 = rhine_time_series - seasonal_model$fitted.values
 plot(seasonal_model)
 
 acf(seasonal_model$residuals)
-plot(seasonal_model$residuals, type='l', main = "Residualds after fitting model")
+plot(seasonal_model$residuals, type='l', main = "Residuals after fitting model")
 
 ```
 
-**Answer:** We can clearly see that the trend is gone. Also it looks like that after detrending with this model, the remaining data/model seems to become stationary. Still the errors seems to contain some information as it is not normal and still shows the seasonality. Also we have one component let for low lag.
+**Answer:** We can clearly see that the trend is gone. Also it looks like that after detrending with this model, the remaining data/model seems to become stationary. Still the errors seems to contain some information as it is not normal and still shows the seasonality. Also we have one component left for low lag.
 
 ```{r}
 
@@ -583,7 +582,7 @@ ggplot(df) +
 ```
 
 
-**Answer:** We have outliers in all three versions, so they don't disappear. The relaionship remains linear for all versions as well. We do not observe any change in the trend.
+**Answer:** We have outliers in all three versions, so they don't disappear. The relationship remains linear for all versions as well. We do not observe any change in the trend.
 
 **Task e):** Fit the following model: $y_t = \alpha_0 + \alpha_1I(x_t > 0) + \beta_1 x_t + \beta_2x_{t-1} + w_t$ and check which coefficients seem to be significant. How can this be interpreted? Analyze the residual pattern and the ACF of the residuals.
 

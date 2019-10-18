@@ -3,15 +3,15 @@ title: "Time Series Analysis - Lab 02 (Group 7)"
 author: "Anubhav Dikshit (anudi287) and Maximilian Pfundstein (maxpf364)"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   html_document:
     df_print: paged
     toc: true
     toc_float: false
     number_sections: false
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -86,7 +86,7 @@ pacf_ar = function(series., lag.max = 30) {
     colnames(df2) = df2_colnames
     
     # Performing LinReg
-    # We can take tehe residuals with intercept, as it does not affect correlation
+    # We can take the residuals with intercept, as it does not affect correlation
     x_t_dash  = lm(y ~ ., df)$residual
     x_t_dash_dash  = lm(y ~ ., df2)$residual
     
